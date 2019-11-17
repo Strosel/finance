@@ -22,7 +22,7 @@ func GetHistoryView() *HistoryView {
 	root.Summary.SetTitle("Summary")
 	root.Summary.SetSizePolicy(tui.Maximum, tui.Maximum)
 
-	root.LoadHistory()
+	root.Update()
 	hbox := tui.NewVBox(root.History)
 	hbox.SetBorder(true)
 	hbox.SetTitle("History")
@@ -44,16 +44,17 @@ func GetHistoryView() *HistoryView {
 	return &root
 }
 
-func (hv *HistoryView) LoadHistory() {
+func (hv *HistoryView) Update() {
 	events := RandEventStub(40)
 	history := tui.NewVBox()
 
 	for _, e := range events {
 		history.Append(tui.NewHBox(
 			tui.NewLabel(fmt.Sprintf("[%v]", e.GetTime().Format("06-01-02 15:04"))),
-			tui.NewPadder(5, 0, tui.NewLabel(e.GetName())),
-			tui.NewLabel(fmt.Sprintf("%v", e.GetSum())),
-			tui.NewPadder(5, 0, tui.NewLabel(e.GetType())),
+			tui.NewPadder(2, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetName()))),
+			tui.NewLabel(fmt.Sprintf("%5v", e.GetSum())),
+			tui.NewPadder(2, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetCategory()))),
+			tui.NewLabel(e.GetType()),
 		))
 	}
 

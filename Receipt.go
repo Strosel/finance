@@ -24,6 +24,10 @@ func (r Receipt) GetSum() int {
 	return sum
 }
 
+func (r Receipt) GetCategory() string {
+	return ""
+}
+
 func (r Receipt) GetType() string {
-	return "Receipt"
+	return "R"
 }

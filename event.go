@@ -10,6 +10,7 @@ type Event interface {
 	GetTime() time.Time
 	GetName() string
 	GetSum() int
+	GetCategory() string
 	GetType() string
 }
 
@@ -27,6 +28,7 @@ func RandEventStub(n int) []Event {
 			ev = append(ev, Transaction{
 				Datetime: time.Now().Add(time.Duration(-i) * time.Hour),
 				Name:     fmt.Sprintf("Name%v", i),
+				Category: fmt.Sprintf("Cat_%v", rand.Intn(5)),
 				Sum:      rand.Intn(500),
 			})
 		}

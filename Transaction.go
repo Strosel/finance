@@ -22,6 +22,10 @@ func (t Transaction) GetSum() int {
 	return t.Sum
 }
 
+func (t Transaction) GetCategory() string {
+	return t.Category
+}
+
 func (t Transaction) GetType() string {
-	return "Transaction"
+	return "T"
 }
