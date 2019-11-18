@@ -55,7 +55,7 @@ func (hv *HistoryView) updateHistory(events []Event, expand string) {
 			tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetCategory()))),
 			tui.NewLabel(e.GetType()),
 		))
-		if e.GetType() == "R/"+expand {
+		if e.GetType() == "R/"+expand || e.GetType() == expand {
 			r := e.(Receipt)
 			for _, p := range r.Products {
 				hv.History.Append(tui.NewHBox(
@@ -98,7 +98,6 @@ func (hv *HistoryView) updateSummary(events []Event) {
 func (hv *HistoryView) Update(expand string) {
 	//events := RandEventStub(40)
 	events := GetEvents()
-	fmt.Println(len(events))
 	hv.updateHistory(events, expand)
 	hv.updateSummary(events)
 }

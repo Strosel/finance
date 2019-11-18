@@ -21,8 +21,8 @@ func NewScrollBox() *ScrollBox {
 }
 
 func (sb *ScrollBox) Clear() {
-	for i := 0; i < sb.store.Length(); i++ {
-		sb.store.Remove(i)
+	for sb.store.Length() != 0 {
+		sb.store.Remove(0)
 	}
 }
 
