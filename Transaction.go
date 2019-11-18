@@ -1,13 +1,19 @@
 package main
 
-import "time"
+import (
+	"fmt"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Transaction struct {
-	Datetime time.Time
-	Name     string
-	Sum      int // int of ören obvuiously
-	Category string
-	Note     string
+	ID       primitive.ObjectID `bson:"_id"`
+	Datetime time.Time          `bson:"datetime,omitempty"`
+	Name     string             `bson:"name,omitempty"`
+	Sum      int                `bson:"sum,omitempty"` // int of ören obvuiously
+	Category string             `bson:"category,omitempty"`
+	Note     string             `bson:"note,omitempty"`
 }
 
 func (t Transaction) GetTime() time.Time {
@@ -27,5 +33,6 @@ func (t Transaction) GetCategory() string {
 }
 
 func (t Transaction) GetType() string {
-	return "T"
+	id := fmt.Sprintf("T/" + t.ID.Hex())
+	return idre.ReplaceAllString(id, "/0")
 }

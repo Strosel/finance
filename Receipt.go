@@ -1,11 +1,17 @@
 package main
 
-import "time"
+import (
+	"fmt"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Receipt struct {
-	Datetime time.Time
-	Store    string
-	Products []Transaction
+	ID       primitive.ObjectID `bson:"_id"`
+	Datetime time.Time          `bson:"datetime,omitempty"`
+	Store    string             `bson:"store,omitempty"`
+	Products []Transaction      `bson:"products,omitempty"`
 }
 
 func (r Receipt) GetTime() time.Time {
@@ -29,5 +35,6 @@ func (r Receipt) GetCategory() string {
 }
 
 func (r Receipt) GetType() string {
-	return "R"
+	id := fmt.Sprintf("R/" + r.ID.Hex())
+	return idre.ReplaceAllString(id, "/0")
 }

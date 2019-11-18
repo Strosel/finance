@@ -23,7 +23,7 @@ func GetHistoryView() *HistoryView {
 	root.Summary.SetSizePolicy(tui.Maximum, tui.Maximum)
 
 	root.History = NewScrollBox()
-	root.Update()
+	root.Update("")
 	root.History.SetBorder(true)
 	root.History.SetTitle("History")
 	root.History.SetSizePolicy(tui.Expanding, tui.Expanding)
@@ -44,7 +44,7 @@ func GetHistoryView() *HistoryView {
 	return &root
 }
 
-func (hv *HistoryView) updateHistory(events []Event) {
+func (hv *HistoryView) updateHistory(events []Event, expand string) {
 	hv.History.Clear()
 
 	for _, e := range events {
@@ -55,6 +55,18 @@ func (hv *HistoryView) updateHistory(events []Event) {
 			tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetCategory()))),
 			tui.NewLabel(e.GetType()),
 		))
+		if e.GetType() == "R/"+expand {
+			r := e.(Receipt)
+			for _, p := range r.Products {
+				hv.History.Append(tui.NewHBox(
+					tui.NewLabel("                "),
+					tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", p.GetName()))),
+					tui.NewLabel(fmt.Sprintf("%5v", p.GetSum())),
+					tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", p.GetCategory()))),
+					tui.NewLabel(p.GetType()),
+				))
+			}
+		}
 	}
 }
 
@@ -83,17 +95,24 @@ func (hv *HistoryView) updateSummary(events []Event) {
 	}
 }
 
-func (hv *HistoryView) Update() {
-	events := RandEventStub(40)
-	hv.updateHistory(events)
+func (hv *HistoryView) Update(expand string) {
+	//events := RandEventStub(40)
+	events := GetEvents()
+	fmt.Println(len(events))
+	hv.updateHistory(events, expand)
 	hv.updateSummary(events)
 }
 
 func (hv *HistoryView) Command(e *tui.Entry) {
-	cmd := strings.ToLower(e.Text())
-	switch cmd {
+	cmd := strings.Split(e.Text(), " ")
+	switch strings.ToLower(cmd[0]) {
 	case "update":
-		hv.Update()
+		hv.Update("")
+		fallthrough
+	case "expand":
+		if len(cmd) > 1 {
+			hv.Update(cmd[1])
+		}
 		fallthrough
 	case "top":
 		hv.History.ScrollToTop()
