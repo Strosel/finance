@@ -9,24 +9,24 @@ import (
 
 type HistoryView struct {
 	*tui.Box
-	Summary *tui.Box
-	History *tui.ScrollArea
+	Summary *ScrollBox
+	History *ScrollBox
 	Input   *tui.Entry
 }
 
 func GetHistoryView() *HistoryView {
 	root := HistoryView{}
 
-	root.Summary = tui.NewVBox(tui.NewLabel("          ")) //minimal size padding label
+	root.Summary = NewScrollBox()
 	root.Summary.SetBorder(true)
 	root.Summary.SetTitle("Summary")
 	root.Summary.SetSizePolicy(tui.Maximum, tui.Maximum)
 
+	root.History = NewScrollBox()
 	root.Update()
-	hbox := tui.NewVBox(root.History)
-	hbox.SetBorder(true)
-	hbox.SetTitle("History")
-	hbox.SetSizePolicy(tui.Expanding, tui.Expanding)
+	root.History.SetBorder(true)
+	root.History.SetTitle("History")
+	root.History.SetSizePolicy(tui.Expanding, tui.Expanding)
 
 	root.Input = tui.NewEntry()
 	root.Input.SetFocused(true)
@@ -37,33 +37,65 @@ func GetHistoryView() *HistoryView {
 	input.SetBorder(true)
 	input.SetSizePolicy(tui.Minimum, tui.Maximum)
 
-	mbox := tui.NewVBox(hbox, input)
+	mbox := tui.NewVBox(root.History, input)
 
 	root.Box = tui.NewHBox(root.Summary, mbox)
 
 	return &root
 }
 
-func (hv *HistoryView) Update() {
-	events := RandEventStub(40)
-	history := tui.NewVBox()
+func (hv *HistoryView) updateHistory(events []Event) {
+	hv.History.Clear()
 
 	for _, e := range events {
-		history.Append(tui.NewHBox(
+		hv.History.Append(tui.NewHBox(
 			tui.NewLabel(fmt.Sprintf("[%v]", e.GetTime().Format("06-01-02 15:04"))),
-			tui.NewPadder(2, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetName()))),
+			tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetName()))),
 			tui.NewLabel(fmt.Sprintf("%5v", e.GetSum())),
-			tui.NewPadder(2, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetCategory()))),
+			tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetCategory()))),
 			tui.NewLabel(e.GetType()),
 		))
 	}
+}
 
-	hv.History = tui.NewScrollArea(history)
+func (hv *HistoryView) updateSummary(events []Event) {
+	hv.Summary.Clear()
+
+	budget := map[string]int{}
+	spent := map[string]int{}
+	for _, e := range events {
+		switch v := e.(type) {
+		case Transaction:
+			spent[e.GetCategory()] += e.GetSum()
+			budget[e.GetCategory()] = 2000
+		case Receipt:
+			for _, p := range v.Products {
+				spent[p.GetCategory()] += e.GetSum()
+				budget[p.GetCategory()] = 2000
+			}
+		}
+	}
+
+	//TODO print after set order of budget
+	//TODO conditional color
+	for c, s := range spent {
+		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%-6v%6v\n", c, budget[c], s)))
+	}
+}
+
+func (hv *HistoryView) Update() {
+	events := RandEventStub(40)
+	hv.updateHistory(events)
+	hv.updateSummary(events)
 }
 
 func (hv *HistoryView) Command(e *tui.Entry) {
 	cmd := strings.ToLower(e.Text())
-	if cmd == "top" {
+	switch cmd {
+	case "update":
+		hv.Update()
+		fallthrough
+	case "top":
 		hv.History.ScrollToTop()
 	}
 	e.SetText("")
