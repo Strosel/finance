@@ -70,36 +70,50 @@ func (hv *HistoryView) updateHistory(events []Event, expand string) {
 	}
 }
 
-func (hv *HistoryView) updateSummary(events []Event) {
+func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 	hv.Summary.Clear()
 
-	budget := map[string]int{}
 	spent := map[string]int{}
 	for _, e := range events {
 		switch v := e.(type) {
 		case Transaction:
-			spent[e.GetCategory()] += e.GetSum()
-			budget[e.GetCategory()] = 2000
+			cat := e.GetCategory()
+			if _, ok := budget.Budget[cat]; ok {
+				spent[cat] += e.GetSum()
+			} else {
+				spent["other"] += e.GetSum()
+			}
 		case Receipt:
 			for _, p := range v.Products {
-				spent[p.GetCategory()] += e.GetSum()
-				budget[p.GetCategory()] = 2000
+				cat := p.GetCategory()
+				if _, ok := budget.Budget[cat]; ok {
+					spent[cat] += p.GetSum()
+				} else {
+					spent["other"] += p.GetSum()
+				}
 			}
 		}
 	}
 
 	//TODO print after set order of budget
-	//TODO conditional color
-	for c, s := range spent {
-		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%-6v%6v\n", c, budget[c], s)))
+	//TODO conditional color REMEMBER savings
+	for c, s := range budget.Budget {
+		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%-5.2v%5.2v\n", c, float64(s)/100., float64(spent[c])/100.)))
 	}
+	bt, st := 0, 0
+	for k, v := range budget.Budget {
+		bt += v
+		st += spent[k]
+	}
+	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%-5.2v%5.2v\n", "Total", float64(bt)/100., float64(st)/100.)))
 }
 
 func (hv *HistoryView) Update(expand string) {
 	//events := RandEventStub(40)
 	events := GetEvents()
+	budget := GetBudget()
 	hv.updateHistory(events, expand)
-	hv.updateSummary(events)
+	hv.updateSummary(events, budget)
 }
 
 func (hv *HistoryView) Command(e *tui.Entry) {
