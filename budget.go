@@ -10,10 +10,11 @@ import (
 )
 
 type Budget struct {
-	ID     primitive.ObjectID `bson:"_id"`
-	Start  time.Time          `bson:"start,omitempty"`
-	End    time.Time          `bson:"end,omitempty"`
-	Budget map[string]int     `bson:"budget,omitempty"`
+	ID       primitive.ObjectID `bson:"_id"`
+	Start    time.Time          `bson:"start,omitempty"`
+	End      time.Time          `bson:"end,omitempty"`
+	Spending map[string]int     `bson:"spending,omitempty"`
+	Income   map[string]Income  `bson:"income,omitempty"`
 }
 
 func GetBudget() Budget {
