@@ -14,7 +14,9 @@ func NewScrollBox() *ScrollBox {
 	sb := ScrollBox{}
 
 	sb.store = tui.NewVBox()
+	sb.store.SetSizePolicy(tui.Preferred, tui.Expanding)
 	sb.scroll = tui.NewScrollArea(sb.store)
+	sb.scroll.SetSizePolicy(tui.Preferred, tui.Expanding)
 	sb.Box = tui.NewVBox(sb.scroll)
 
 	return &sb

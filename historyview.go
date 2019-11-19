@@ -23,6 +23,7 @@ func GetHistoryView() *HistoryView {
 	root.Summary.SetBorder(true)
 	root.Summary.SetTitle("Summary")
 	root.Summary.SetSizePolicy(tui.Maximum, tui.Maximum)
+	root.Summary.Box.Append(tui.NewLabel(fmt.Sprintf("%18v", "")))
 
 	root.History = NewScrollBox()
 	root.Update("")
@@ -97,11 +98,14 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 		}
 	}
 
+	hv.Summary.Append(tui.NewLabel("Income"))
 	for c, s := range budget.Income {
-		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%7v%6.2f\n", c, "", float64(s.Sum)/100.)))
+		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:", c)))
+		hv.Summary.Append(SummaryFormat(-1, s.Sum, !s.Received))
 	}
 
-	//! %f8.2 for up to 10k
+	hv.Summary.Append(tui.NewLabel(" "))
+	hv.Summary.Append(tui.NewLabel("Spending"))
 	for c, s := range budget.Spending {
 		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:", c)))
 
@@ -128,7 +132,7 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 		}
 	}
 	hv.Summary.Append(tui.NewLabel(" ")) //?
-	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%6.2f %6.2f\n", "Balance", float64(inc-bt)/100., float64(inc-st)/100.)))
+	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%8.2f %8.2f", "Balance", float64(inc-bt)/100., float64(inc-st)/100.)))
 }
 
 func (hv *HistoryView) Update(expand string) {

@@ -17,15 +17,21 @@ func GetTheme() *tui.Theme {
 }
 
 func SummaryFormat(plan, fact int, warn bool) *tui.Box {
-	slbl := tui.NewLabel(fmt.Sprintf("%6.2f", float64(fact)/100.))
+	slbl := tui.NewLabel(fmt.Sprintf("%8.2f", float64(fact)/100.))
 	if warn {
 		slbl.SetStyleName("warning")
 	} else {
 		slbl.SetStyleName("good")
 	}
 
+	if plan >= 0 {
+		return tui.NewHBox(
+			tui.NewLabel(fmt.Sprintf("%8.2f", float64(plan)/100.)),
+			slbl,
+		)
+	}
 	return tui.NewHBox(
-		tui.NewLabel(fmt.Sprintf("%6.2f", float64(plan)/100.)),
+		tui.NewLabel(fmt.Sprintf("%8v", "")),
 		slbl,
 	)
 }
