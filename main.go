@@ -27,8 +27,7 @@ func main() {
 	noerr.Panic(err)
 
 	ui.SetKeybinding("Esc", func() { ui.Quit() })
-	ui.SetKeybinding("Up", func() { hView.History.Scroll(0, -1) })
-	ui.SetKeybinding("Down", func() { hView.History.Scroll(0, 1) })
+	ui.SetFocusChain(hView)
 
 	if err := ui.Run(); err != nil {
 		panic(err)

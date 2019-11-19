@@ -37,3 +37,18 @@ func (sb *ScrollBox) Scroll(dx, dy int) {
 func (sb *ScrollBox) ScrollToTop() {
 	sb.scroll.ScrollToTop()
 }
+
+func (sb *ScrollBox) OnKeyEvent(ev tui.KeyEvent) {
+	if sb.IsFocused() {
+		switch ev.Name() {
+		case "Up":
+			sb.Scroll(0, 1)
+		case "Down":
+			sb.Scroll(0, -1)
+		}
+	}
+}
+
+func (sb *ScrollBox) SetFocused(b bool) {
+	sb.scroll.SetFocused(b)
+}
