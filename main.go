@@ -28,6 +28,7 @@ func main() {
 
 	ui.SetKeybinding("Esc", func() { ui.Quit() })
 	ui.SetFocusChain(hView)
+	ui.SetTheme(GetTheme())
 
 	if err := ui.Run(); err != nil {
 		panic(err)

@@ -7,6 +7,8 @@ import (
 	"github.com/marcusolsson/tui-go"
 )
 
+const savestr = "spar|spara|sparande|save|saving|savings"
+
 type HistoryView struct {
 	*tui.Box
 	Summary *ScrollBox
@@ -95,9 +97,19 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 		}
 	}
 
-	//TODO conditional color REMEMBER savings
+	for c, s := range budget.Income {
+		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%7v%6.2f\n", c, "", float64(s.Sum)/100.)))
+	}
+
+	//! %f8.2 for up to 10k
 	for c, s := range budget.Spending {
-		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%-5.2v%5.2v\n", c, float64(s)/100., float64(spent[c])/100.)))
+		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:", c)))
+
+		if strings.Contains(savestr, strings.ToLower(c)) {
+			hv.Summary.Append(SummaryFormat(s, spent[c], spent[c] < s))
+		} else {
+			hv.Summary.Append(SummaryFormat(s, spent[c], spent[c] > s))
+		}
 	}
 	bt, st := 0, 0
 	for k, v := range budget.Spending {
@@ -106,7 +118,8 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 	}
 
 	hv.Summary.Append(tui.NewLabel(" ")) //?
-	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%-5.2v%5.2v\n", "Total", float64(bt)/100., float64(st)/100.)))
+	hv.Summary.Append(tui.NewLabel("Total:"))
+	hv.Summary.Append(SummaryFormat(bt, st, st > bt))
 
 	inc := 0
 	for _, v := range budget.Income {
@@ -114,7 +127,8 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 			inc += v.Sum
 		}
 	}
-	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%-5.2v%5.2v\n", "Balance", float64(inc-bt)/100., float64(inc-st)/100.)))
+	hv.Summary.Append(tui.NewLabel(" ")) //?
+	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%6.2f %6.2f\n", "Balance", float64(inc-bt)/100., float64(inc-st)/100.)))
 }
 
 func (hv *HistoryView) Update(expand string) {
