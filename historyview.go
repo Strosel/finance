@@ -143,23 +143,6 @@ func (hv *HistoryView) Update(expand string) {
 	hv.updateSummary(events, budget)
 }
 
-func (hv *HistoryView) Command(e *tui.Entry) {
-	cmd := strings.Split(e.Text(), " ")
-	switch strings.ToLower(cmd[0]) {
-	case "update":
-		hv.Update("")
-		fallthrough
-	case "expand":
-		if len(cmd) > 1 {
-			hv.Update(cmd[1])
-		}
-		fallthrough
-	case "top":
-		hv.History.ScrollToTop()
-	}
-	e.SetText("")
-}
-
 func (hv *HistoryView) FocusNext(w tui.Widget) tui.Widget {
 	switch w {
 	case hv.Input:
@@ -188,4 +171,21 @@ func (hv *HistoryView) FocusPrev(w tui.Widget) tui.Widget {
 
 func (hv *HistoryView) FocusDefault() tui.Widget {
 	return hv.Input
+}
+
+func (hv *HistoryView) Command(e *tui.Entry) {
+	cmd := strings.Split(e.Text(), " ")
+	switch strings.ToLower(cmd[0]) {
+	case "update":
+		hv.Update("")
+		fallthrough
+	case "expand":
+		if len(cmd) > 1 {
+			hv.Update(cmd[1])
+		}
+		fallthrough
+	case "top":
+		hv.History.ScrollToTop()
+	}
+	e.SetText("")
 }
