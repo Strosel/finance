@@ -186,6 +186,19 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 		fallthrough
 	case "top":
 		hv.History.ScrollToTop()
+		hv.Summary.ScrollToTop()
+	case "add":
+		if len(cmd) > 1 {
+			if strings.ToLower(cmd[1])[0] == 'r' {
+				aView := NewAddRView(nil)
+				ui.SetWidget(aView)
+				ui.SetFocusChain(aView)
+			} else if strings.ToLower(cmd[1])[0] == 't' {
+				aView := NewAddTView(nil, nil)
+				ui.SetWidget(aView)
+				ui.SetFocusChain(aView)
+			}
+		}
 	}
 	e.SetText("")
 }

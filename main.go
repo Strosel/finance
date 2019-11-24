@@ -12,6 +12,7 @@ import (
 
 var (
 	db    *mongo.Database
+	ui    tui.UI
 	hView *HistoryView
 	err   error
 )
@@ -23,7 +24,7 @@ func main() {
 
 	hView = GetHistoryView()
 
-	ui, err := tui.New(hView)
+	ui, err = tui.New(hView)
 	noerr.Panic(err)
 
 	ui.SetKeybinding("Esc", func() { ui.Quit() })
