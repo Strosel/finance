@@ -32,21 +32,17 @@ func (sb *ScrollBox) Append(w tui.Widget) {
 	sb.store.Append(w)
 }
 
-func (sb *ScrollBox) Scroll(dx, dy int) {
-	sb.scroll.Scroll(dx, dy)
-}
-
-func (sb *ScrollBox) ScrollToTop() {
-	sb.scroll.ScrollToTop()
-}
-
 func (sb *ScrollBox) OnKeyEvent(ev tui.KeyEvent) {
 	if sb.IsFocused() {
 		switch ev.Name() {
 		case "Up":
-			sb.Scroll(0, 1)
+			sb.scroll.Scroll(0, -1)
 		case "Down":
-			sb.Scroll(0, -1)
+			sb.scroll.Scroll(0, 1)
+		case "Left":
+			sb.scroll.ScrollToTop()
+		case "Right":
+			sb.scroll.ScrollToBottom()
 		}
 	}
 }

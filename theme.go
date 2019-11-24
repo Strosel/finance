@@ -13,6 +13,7 @@ func GetTheme() *tui.Theme {
 	t.SetStyle("label.warning", tui.Style{Bg: tui.ColorDefault, Fg: tui.ColorRed})
 	t.SetStyle("label.good", tui.Style{Bg: tui.ColorDefault, Fg: tui.ColorGreen})
 	t.SetStyle("button.focused", tui.Style{Bg: tui.ColorWhite, Fg: tui.ColorBlack})
+	t.SetStyle("list.item.selected", tui.Style{Bg: tui.ColorWhite, Fg: tui.ColorBlack})
 
 	return t
 }

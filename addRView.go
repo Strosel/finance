@@ -14,7 +14,7 @@ type AddRView struct {
 	Saveb   *tui.Button
 	Cancelb *tui.Button
 	Addb    *tui.Button
-	Prodb   *ScrollBox
+	Prodb   *ScrollList
 
 	Receipt *Receipt
 }
@@ -25,6 +25,10 @@ func NewAddRView(r *Receipt) *AddRView {
 	}
 	root := AddRView{
 		Receipt: r,
+	}
+
+	for i := 0; i < 10; i++ {
+		r.Products = append(r.Products, Transaction{Name: fmt.Sprint(i)})
 	}
 
 	root.Datei = tui.NewEntry()
@@ -47,7 +51,7 @@ func NewAddRView(r *Receipt) *AddRView {
 
 	root.Addb = tui.NewButton("[Add]")
 	root.Addb.OnActivated(root.Add)
-	root.Prodb = NewScrollBox()
+	root.Prodb = NewScrollList()
 	boxp := tui.NewVBox(root.Addb, root.Prodb)
 	boxp.SetBorder(true)
 	boxp.SetTitle("Products")
@@ -63,6 +67,7 @@ func NewAddRView(r *Receipt) *AddRView {
 		root.Storei.SetText(root.Receipt.Store)
 	}
 
+	root.Update()
 	return &root
 }
 
@@ -87,12 +92,14 @@ func (av *AddRView) Add(b *tui.Button) {
 func (av *AddRView) Update() {
 	av.Prodb.Clear()
 	for _, p := range av.Receipt.Products {
-		av.Prodb.Append(tui.NewHBox(
-			tui.NewLabel(fmt.Sprintf("%10v", p.GetName())),
-			tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%5v", p.GetSum()))),
-			tui.NewLabel(fmt.Sprintf("%10v", p.GetCategory())),
-			tui.NewPadder(1, 0, tui.NewLabel(p.GetType())),
-		))
+		av.Prodb.Append(
+			fmt.Sprintf(
+				"%10v %5v %10v",
+				p.GetName(),
+				p.GetSum(),
+				p.GetCategory(),
+			),
+		)
 	}
 }
 
