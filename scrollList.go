@@ -8,15 +8,17 @@ type ScrollList struct {
 	*tui.Box
 	scroll *tui.ScrollArea
 	store  *tui.List
+
+	sel int
 }
 
 func NewScrollList() *ScrollList {
 	sl := ScrollList{}
 
 	sl.store = tui.NewList()
-	sl.store.SetSizePolicy(tui.Preferred, tui.Expanding)
+	sl.store.SetSizePolicy(tui.Expanding, tui.Expanding)
 	sl.scroll = tui.NewScrollArea(sl.store)
-	sl.scroll.SetSizePolicy(tui.Preferred, tui.Expanding)
+	sl.scroll.SetSizePolicy(tui.Expanding, tui.Expanding)
 	sl.Box = tui.NewVBox(sl.scroll)
 
 	return &sl
@@ -63,8 +65,9 @@ func (sl *ScrollList) OnKeyEvent(ev tui.KeyEvent) {
 
 func (sl *ScrollList) SetFocused(b bool) {
 	if b {
-		sl.store.SetSelected(0)
+		sl.store.SetSelected(sl.sel)
 	} else {
+		sl.sel = sl.store.Selected()
 		sl.store.SetSelected(-1)
 	}
 }
