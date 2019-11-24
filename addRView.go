@@ -27,10 +27,6 @@ func NewAddRView(r *Receipt) *AddRView {
 		Receipt: r,
 	}
 
-	for i := 0; i < 10; i++ {
-		r.Products = append(r.Products, Transaction{Name: fmt.Sprint(i)})
-	}
-
 	root.Datei = tui.NewEntry()
 	root.Datei.SetFocused(true)
 	root.Datei.SetSizePolicy(tui.Expanding, tui.Minimum)
