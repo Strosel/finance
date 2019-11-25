@@ -9,9 +9,10 @@ import (
 type SetBView struct {
 	*tui.Box
 	//General
-	Starti *tui.Entry
-	Endi   *tui.Entry
-	Saveb  *tui.Button
+	Starti  *tui.Entry
+	Endi    *tui.Entry
+	Saveb   *tui.Button
+	Cancelb *tui.Button
 	//Income
 	Nameii *tui.Entry
 	Sumii  *tui.Entry
@@ -84,7 +85,29 @@ func NewSetBView(b *Budget) *SetBView {
 	spbox.SetBorder(true)
 	spbox.SetTitle("Spending")
 
-	root.Box = tui.NewHBox(inbox, spbox)
+	gbox := tui.NewHBox(inbox, spbox)
+
+	root.Starti = tui.NewEntry()
+	root.Endi = tui.NewEntry()
+	tbox := tui.NewVBox(
+		tui.NewLabel("Start (yy-mm-dd hh:mm):"),
+		root.Starti,
+		tui.NewLabel("End (yy-mm-dd hh:mm):"),
+		root.Endi,
+	)
+	tbox.SetBorder(true)
+
+	root.Saveb = tui.NewButton("[save]")
+	root.Saveb.OnActivated(root.Save)
+	root.Cancelb = tui.NewButton("[cancel]")
+	root.Cancelb.OnActivated(root.Cancel)
+	bbox := tui.NewHBox(tui.NewSpacer(), root.Cancelb, tui.NewLabel(" "), root.Saveb, tui.NewLabel(" "))
+
+	root.Box = tui.NewVBox(gbox, tbox, bbox)
+
+	if !b.ID.IsZero() {
+		//Todo Finish this
+	}
 
 	root.Update()
 	return &root
@@ -114,6 +137,14 @@ func (sv *SetBView) Update() {
 
 }
 
+func (sv *SetBView) Save(b *tui.Button) {
+}
+
+func (sv *SetBView) Cancel(b *tui.Button) {
+	ui.SetWidget(hView)
+	ui.SetFocusChain(hView)
+}
+
 func (sv *SetBView) FocusNext(w tui.Widget) tui.Widget {
 	switch w {
 	//Income Block
@@ -135,6 +166,15 @@ func (sv *SetBView) FocusNext(w tui.Widget) tui.Widget {
 	case sv.Addsb:
 		return sv.Sets
 	case sv.Sets:
+		return sv.Starti
+	//General Block
+	case sv.Starti:
+		return sv.Endi
+	case sv.Endi:
+		return sv.Cancelb
+	case sv.Cancelb:
+		return sv.Saveb
+	case sv.Saveb:
 		return sv.Nameii
 	default:
 		return nil
@@ -145,7 +185,7 @@ func (sv *SetBView) FocusPrev(w tui.Widget) tui.Widget {
 	switch w {
 	//Income Block
 	case sv.Nameii:
-		return sv.Sets
+		return sv.Saveb
 	case sv.Sumii:
 		return sv.Nameii
 	case sv.Dateii:
@@ -163,6 +203,15 @@ func (sv *SetBView) FocusPrev(w tui.Widget) tui.Widget {
 		return sv.Sumsi
 	case sv.Sets:
 		return sv.Addsb
+	//General Block
+	case sv.Starti:
+		return sv.Sets
+	case sv.Endi:
+		return sv.Starti
+	case sv.Cancelb:
+		return sv.Endi
+	case sv.Saveb:
+		return sv.Cancelb
 	default:
 		return nil
 	}
