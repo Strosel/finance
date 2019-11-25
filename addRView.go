@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/marcusolsson/tui-go"
+	"github.com/strosel/noerr"
 )
 
 type AddRView struct {
@@ -57,11 +58,11 @@ func NewAddRView(r *Receipt) *AddRView {
 
 	if r.ID.IsZero() {
 		root.Box.SetTitle("Add")
+		root.Datei.SetText(time.Now().Format("06-01-02 15:04"))
 	} else {
 		root.Box.SetTitle("Update")
 		root.Datei.SetText(root.Receipt.Datetime.Format("06-01-02 15:04"))
 		root.Storei.SetText(root.Receipt.Store)
-		//Todo Finish this
 	}
 
 	root.Update()
@@ -69,10 +70,11 @@ func NewAddRView(r *Receipt) *AddRView {
 }
 
 func (av *AddRView) Save(b *tui.Button) {
-	if av.Receipt.Datetime.Equal(time.Time{}) {
-		av.Receipt.Datetime = time.Now()
-	}
+	av.Receipt.Datetime, err = time.Parse("06-01-02 15:04", av.Datei.Text())
+	noerr.Panic(err)
+	av.Receipt.Store = av.Storei.Text()
 	//! handle errors
+	//add to db
 }
 
 func (av *AddRView) Cancel(b *tui.Button) {
@@ -91,9 +93,9 @@ func (av *AddRView) Update() {
 	for _, p := range av.Receipt.Products {
 		av.Prodb.Append(
 			fmt.Sprintf(
-				"%10v %5v %10v",
+				"%10v %8.2f %10v",
 				p.GetName(),
-				p.GetSum(),
+				float64(p.GetSum())/100,
 				p.GetCategory(),
 			),
 		)

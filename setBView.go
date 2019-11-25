@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/strosel/noerr"
 
 	"github.com/marcusolsson/tui-go"
 )
@@ -105,8 +109,12 @@ func NewSetBView(b *Budget) *SetBView {
 
 	root.Box = tui.NewVBox(gbox, tbox, bbox)
 
-	if !b.ID.IsZero() {
-		//Todo Finish this
+	if b.ID.IsZero() {
+		root.Starti.SetText(time.Now().Format("06-01-02 15:04"))
+		root.Endi.SetText(time.Now().Add(time.Hour * 24 * 30).Format("06-01-02 15:04"))
+	} else {
+		root.Starti.SetText(root.Budget.Start.Format("06-01-02 15:04"))
+		root.Endi.SetText(root.Budget.End.Format("06-01-02 15:04"))
 	}
 
 	root.Update()
@@ -114,12 +122,21 @@ func NewSetBView(b *Budget) *SetBView {
 }
 
 func (sv *SetBView) Addi(b *tui.Button) {
-	sv.Budget.Income[sv.Nameii.Text()] = Income{}
+	sum, err := strconv.ParseFloat(sv.Sumii.Text(), 64)
+	noerr.Panic(err)
+	date, err := time.Parse("06-01-02 15:04", sv.Dateii.Text())
+	noerr.Panic(err)
+	sv.Budget.Income[sv.Nameii.Text()] = Income{
+		Sum:  int(100 * sum),
+		Date: date,
+	}
 	sv.Update()
 }
 
 func (sv *SetBView) Adds(b *tui.Button) {
-	sv.Budget.Spending[sv.Namesi.Text()] = 0
+	sum, err := strconv.ParseFloat(sv.Sumsi.Text(), 64)
+	noerr.Panic(err)
+	sv.Budget.Spending[sv.Namesi.Text()] = int(100 * sum)
 	sv.Update()
 }
 

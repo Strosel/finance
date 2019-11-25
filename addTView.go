@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"time"
+
+	"github.com/strosel/noerr"
 
 	"github.com/marcusolsson/tui-go"
 )
@@ -67,8 +70,14 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 	bbox := tui.NewHBox(tui.NewSpacer(), root.Cancelb, tui.NewLabel(" "), root.Saveb, tui.NewLabel(" "))
 
 	root.Box = tui.NewVBox(nbox, rbox, cbox, nobox, bbox)
+
 	if p == nil {
 		root.Box.Insert(0, boxd)
+		if t.ID.IsZero() {
+			root.Datei.SetText(time.Now().Format("06-01-02 15:04"))
+		} else {
+			root.Datei.SetText(root.Transaction.Datetime.Format("06-01-02 15:04"))
+		}
 	}
 
 	root.Box.SetBorder(true)
@@ -77,21 +86,28 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 		root.Box.SetTitle("Add")
 	} else {
 		root.Box.SetTitle("Update")
-		root.Datei.SetText(root.Transaction.Datetime.Format("06-01-02 15:04"))
-		//Todo Finish this
+		root.Namei.SetText(root.Transaction.Name)
+		root.Sumi.SetText(fmt.Sprintf("%8.2f", float64(root.Transaction.Sum)/100))
+		root.Cati.SetText(root.Transaction.Category)
+		root.Notei.SetText(root.Transaction.Note)
 	}
 
 	return &root
 }
 
 func (av *AddTView) Save(b *tui.Button) {
-	if av.Transaction.Datetime.Equal(time.Time{}) {
-		av.Transaction.Datetime = time.Now()
-	}
-	//todo actually enter fiels into object
 	av.Transaction.Name = av.Namei.Text()
+	av.Transaction.Category = av.Cati.Text()
+	av.Transaction.Note = av.Notei.Text()
+
+	sum, err := strconv.ParseFloat(av.Sumi.Text(), 64)
+	noerr.Panic(err)
+	av.Transaction.Sum = int(sum * 100)
+
 	//! handle errors
 	if av.Parent == nil {
+		av.Transaction.Datetime, err = time.Parse("06-01-02 15:04", av.Datei.Text())
+		noerr.Panic(err)
 		//save to db
 	} else {
 		av.Parent.Receipt.Products = append(av.Parent.Receipt.Products, *av.Transaction)
