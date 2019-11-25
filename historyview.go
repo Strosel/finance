@@ -196,6 +196,11 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 				ui.SetFocusChain(aView)
 			}
 		}
+	case "set":
+		sView := NewSetBView(nil)
+		ui.SetWidget(sView)
+		ui.SetFocusChain(sView)
 	}
+
 	e.SetText("")
 }

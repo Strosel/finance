@@ -78,6 +78,7 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 	} else {
 		root.Box.SetTitle("Update")
 		root.Datei.SetText(root.Transaction.Datetime.Format("06-01-02 15:04"))
+		//Todo Finish this
 	}
 
 	return &root

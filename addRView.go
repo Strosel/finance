@@ -61,6 +61,7 @@ func NewAddRView(r *Receipt) *AddRView {
 		root.Box.SetTitle("Update")
 		root.Datei.SetText(root.Receipt.Datetime.Format("06-01-02 15:04"))
 		root.Storei.SetText(root.Receipt.Store)
+		//Todo Finish this
 	}
 
 	root.Update()
