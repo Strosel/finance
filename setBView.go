@@ -41,11 +41,16 @@ type SetBView struct {
 
 func NewSetBView(b *finance.Budget) *SetBView {
 	if b == nil {
-		b = &finance.Budget{
-			Spending: map[string]int{},
-			Income:   map[string]finance.Income{},
-		}
+		b = &finance.Budget{}
 	}
+
+	if b.Income == nil {
+		b.Income = map[string]finance.Income{}
+	}
+	if b.Spending == nil {
+		b.Spending = map[string]int{}
+	}
+
 	root := SetBView{
 		Budget: b,
 		lblsi: map[string]*tui.Label{
