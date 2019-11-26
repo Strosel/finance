@@ -1,4 +1,4 @@
-package main
+package finance
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Event interface {
@@ -17,42 +18,38 @@ type Event interface {
 	GetType() string
 }
 
-func GetEvents(start, end time.Time) []Event {
+func GetEvents(db mongo.Collection, to time.Duration, start, end time.Time) ([]Event, error) {
 	trs := []Transaction{}
 	res := []Receipt{}
-	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
-	curs, err := db.Collection(tDb).Find(ctx, &bson.D{bson.E{
+	ctx, _ := context.WithTimeout(context.Background(), to)
+	curs, err := db.Find(ctx, &bson.D{bson.E{
 		Key: "datetime",
 		Value: bson.D{
 			bson.E{Key: "$gte", Value: start},
 			bson.E{Key: "$lte", Value: end},
 		}}})
 	if err != nil {
-		ui.SetWidget(NewErrorView(err))
-		ui.SetFocusChain(nil)
+		return nil, err
 	}
 	defer curs.Close(ctx)
 	err = curs.All(ctx, &trs)
 	if err != nil {
-		ui.SetWidget(NewErrorView(err))
-		ui.SetFocusChain(nil)
+		return nil, err
 	}
 
-	curs, err = db.Collection(rDb).Find(ctx, &bson.D{bson.E{
+	curs, err = db.Find(ctx, &bson.D{bson.E{
 		Key: "datetime",
 		Value: bson.D{
 			bson.E{Key: "$gte", Value: start},
 			bson.E{Key: "$lte", Value: end},
 		}}})
 	if err != nil {
-		ui.SetWidget(NewErrorView(err))
-		ui.SetFocusChain(nil)
+		return nil, err
 	}
 	defer curs.Close(ctx)
 	err = curs.All(ctx, &res)
 	if err != nil {
-		ui.SetWidget(NewErrorView(err))
-		ui.SetFocusChain(nil)
+		return nil, err
 	}
 
 	evs := []Event{}
@@ -67,5 +64,5 @@ func GetEvents(start, end time.Time) []Event {
 		return evs[i].GetTime().After(evs[j].GetTime())
 	})
 
-	return evs
+	return evs, err
 }

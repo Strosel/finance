@@ -27,7 +27,6 @@ var (
 	hView *HistoryView
 	err   error
 
-	zre  = regexp.MustCompile(`/0+`)
 	idre = regexp.MustCompile(`[RT]/(\w+)`)
 	flre = regexp.MustCompile(`[\.,]`)
 )

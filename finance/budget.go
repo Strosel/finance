@@ -1,8 +1,10 @@
-package main
+package finance
 
 import (
 	"context"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,10 +18,10 @@ type Budget struct {
 	Income   map[string]Income  `bson:"income,omitempty"`
 }
 
-func GetBudget(t time.Time) Budget {
+func GetBudget(db mongo.Collection, to time.Duration, t time.Time) Budget {
 	bgt := Budget{}
-	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
-	res := db.Collection(bDb).FindOne(ctx, bson.M{
+	ctx, _ := context.WithTimeout(context.Background(), to)
+	res := db.FindOne(ctx, bson.M{
 		//time is modified to accomodate fo wierdness in mongodb
 		"start": bson.M{
 			"$lte": t.AddDate(0, 0, 1),
