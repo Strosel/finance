@@ -38,5 +38,5 @@ func (t Transaction) GetCategory() string {
 
 func (t Transaction) GetType() string {
 	id := fmt.Sprintf("T/" + t.ID.Hex())
-	return idre.ReplaceAllString(id, "/0")
+	return zre.ReplaceAllString(id, "/0")
 }

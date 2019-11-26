@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"regexp"
 	"time"
 
 	"github.com/strosel/noerr"
@@ -20,8 +19,6 @@ type Event interface {
 	GetType() string
 }
 
-var idre = regexp.MustCompile(`/0+`)
-
 func RandEventStub(n int) []Event {
 	ev := []Event{}
 
@@ -32,8 +29,8 @@ func RandEventStub(n int) []Event {
 			ev = append(ev, Receipt{
 				Datetime: time.Now().Add(time.Duration(-i) * time.Hour),
 				Store:    fmt.Sprintf("Store%v", i),
-				Products: []Transaction{
-					Transaction{
+				Products: []*Transaction{
+					&Transaction{
 						Name:     fmt.Sprintf("Prod%v", i),
 						Category: fmt.Sprintf("Cat_%v", rand.Intn(5)),
 						Sum:      rand.Intn(500),

@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/strosel/noerr"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/marcusolsson/tui-go"
@@ -89,7 +91,7 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 	} else {
 		root.Box.SetTitle("Update")
 		root.Namei.SetText(root.Transaction.Name)
-		root.Sumi.SetText(root.Transaction.GetSumS())
+		root.Sumi.SetText(strings.TrimSpace(root.Transaction.GetSumS()))
 		root.Cati.SetText(root.Transaction.Category)
 		root.Notei.SetText(root.Transaction.Note)
 	}
@@ -102,9 +104,9 @@ func (av *AddTView) Save(b *tui.Button) {
 	av.Transaction.Category = av.Cati.Text()
 	av.Transaction.Note = av.Notei.Text()
 
-	sum, err := strconv.ParseFloat(av.Sumi.Text(), 64)
+	sum, err := strconv.Atoi(flre.ReplaceAllString(av.Sumi.Text(), ""))
 	noerr.Panic(err)
-	av.Transaction.Sum = int(sum * 100)
+	av.Transaction.Sum = sum
 
 	//! handle errors
 	if av.Parent == nil {
@@ -116,10 +118,18 @@ func (av *AddTView) Save(b *tui.Button) {
 			_, err := db.Collection(tDb).InsertOne(ctx, av.Transaction)
 			noerr.Panic(err)
 		} else {
-			//update
+			ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+			_, err := db.Collection(tDb).ReplaceOne(ctx,
+				bson.M{
+					"_id": av.Transaction.ID,
+				}, av.Transaction)
+			noerr.Panic(err)
 		}
 	} else {
-		av.Parent.Receipt.Products = append(av.Parent.Receipt.Products, *av.Transaction)
+		if av.Transaction.ID.IsZero() {
+			av.Transaction.ID = primitive.ObjectID{1}
+			av.Parent.Receipt.Products = append(av.Parent.Receipt.Products, av.Transaction)
+		}
 	}
 	av.Cancel(b)
 }
@@ -128,6 +138,7 @@ func (av *AddTView) Cancel(b *tui.Button) {
 	if av.Parent == nil {
 		ui.SetWidget(hView)
 		ui.SetFocusChain(hView)
+		hView.Update("")
 	} else {
 		ui.SetWidget(av.Parent)
 		ui.SetFocusChain(av.Parent)

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/strosel/noerr"
@@ -56,6 +57,8 @@ func NewSetBView(b *Budget) *SetBView {
 	root.Addib.OnActivated(root.Addi)
 	root.Seti = NewScrollList()
 	root.Seti.SetBorder(true)
+	root.Seti.SetOnConfirm(root.Editi)
+	root.Seti.SetOnDelete(root.Deli)
 
 	inbox := tui.NewVBox(
 		tui.NewLabel("Name:"),
@@ -79,7 +82,8 @@ func NewSetBView(b *Budget) *SetBView {
 	root.Addsb.OnActivated(root.Adds)
 	root.Sets = NewScrollList()
 	root.Sets.SetBorder(true)
-
+	root.Sets.SetOnConfirm(root.Edits)
+	root.Sets.SetOnDelete(root.Dels)
 	spbox := tui.NewVBox(
 		tui.NewLabel("Name:"),
 		root.Namesi,
@@ -126,12 +130,12 @@ func NewSetBView(b *Budget) *SetBView {
 }
 
 func (sv *SetBView) Addi(b *tui.Button) {
-	sum, err := strconv.ParseFloat(sv.Sumii.Text(), 64)
-	noerr.Panic(err)
+	sum, err := strconv.Atoi(flre.ReplaceAllString(sv.Sumii.Text(), ""))
+	noerr.Fatal(err)
 	date, err := time.Parse(timef, sv.Dateii.Text())
 	noerr.Panic(err)
 	sv.Budget.Income[sv.Nameii.Text()] = Income{
-		Sum:  int(100 * sum),
+		Sum:  sum,
 		Date: date,
 	}
 	sv.Update()
@@ -142,13 +146,64 @@ func (sv *SetBView) Addi(b *tui.Button) {
 }
 
 func (sv *SetBView) Adds(b *tui.Button) {
-	sum, err := strconv.ParseFloat(sv.Sumsi.Text(), 64)
+	sum, err := strconv.Atoi(flre.ReplaceAllString(sv.Sumsi.Text(), ""))
 	noerr.Panic(err)
-	sv.Budget.Spending[sv.Namesi.Text()] = int(100 * sum)
+	sv.Budget.Spending[sv.Namesi.Text()] = sum
 	sv.Update()
 
 	sv.Namesi.SetText("")
 	sv.Sumsi.SetText("")
+}
+
+func (sv *SetBView) Editi(item string) {
+	for n, i := range sv.Budget.Income {
+		lbl := fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timef), float64(i.Sum)/100.)
+
+		if item == lbl {
+			sv.Nameii.SetText(n)
+			sv.Dateii.SetText(i.Date.Format(timef))
+			sv.Sumii.SetText(fmt.Sprintf("%.2f", float64(i.Sum)/100.))
+			delete(sv.Budget.Income, n)
+			break
+		}
+	}
+}
+
+func (sv *SetBView) Edits(item string) {
+	for n, s := range sv.Budget.Spending {
+		lbl := fmt.Sprintf("%-10v %8.2f", n, float64(s)/100.)
+
+		if item == lbl {
+			sv.Namesi.SetText(n)
+			sv.Sumsi.SetText(fmt.Sprintf("%.2f", float64(s)/100.))
+			delete(sv.Budget.Spending, n)
+			break
+		}
+	}
+}
+
+func (sv *SetBView) Deli(item string) {
+	for n, i := range sv.Budget.Income {
+		lbl := fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timef), float64(i.Sum)/100.)
+
+		if item == lbl {
+			delete(sv.Budget.Income, n)
+			break
+		}
+	}
+	sv.Update()
+}
+
+func (sv *SetBView) Dels(item string) {
+	for n, s := range sv.Budget.Spending {
+		lbl := fmt.Sprintf("%-10v %8.2f", n, float64(s)/100.)
+
+		if item == lbl {
+			delete(sv.Budget.Spending, n)
+			break
+		}
+	}
+	sv.Update()
 }
 
 func (sv *SetBView) Update() {
@@ -176,7 +231,12 @@ func (sv *SetBView) Save(b *tui.Button) {
 		_, err := db.Collection(bDb).InsertOne(ctx, sv.Budget)
 		noerr.Panic(err)
 	} else {
-		//update
+		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+		_, err := db.Collection(bDb).ReplaceOne(ctx,
+			bson.M{
+				"_id": sv.Budget.ID,
+			}, sv.Budget)
+		noerr.Panic(err)
 	}
 	sv.Cancel(b)
 }
@@ -184,6 +244,7 @@ func (sv *SetBView) Save(b *tui.Button) {
 func (sv *SetBView) Cancel(b *tui.Button) {
 	ui.SetWidget(hView)
 	ui.SetFocusChain(hView)
+	hView.Update("")
 }
 
 func (sv *SetBView) FocusNext(w tui.Widget) tui.Widget {

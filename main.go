@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"github.com/strosel/noerr"
@@ -25,6 +26,10 @@ var (
 	ui    tui.UI
 	hView *HistoryView
 	err   error
+
+	zre  = regexp.MustCompile(`/0+`)
+	idre = regexp.MustCompile(`[RT]/(\w+)`)
+	flre = regexp.MustCompile(`[\.,]`)
 )
 
 func main() {

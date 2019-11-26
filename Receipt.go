@@ -11,7 +11,7 @@ type Receipt struct {
 	ID       primitive.ObjectID `bson:"_id"`
 	Datetime time.Time          `bson:"datetime,omitempty"`
 	Store    string             `bson:"store,omitempty"`
-	Products []Transaction      `bson:"products,omitempty"`
+	Products []*Transaction     `bson:"products,omitempty"`
 }
 
 func (r Receipt) GetTime() time.Time {
@@ -40,5 +40,5 @@ func (r Receipt) GetCategory() string {
 
 func (r Receipt) GetType() string {
 	id := fmt.Sprintf("R/" + r.ID.Hex())
-	return idre.ReplaceAllString(id, "/0")
+	return zre.ReplaceAllString(id, "/0")
 }

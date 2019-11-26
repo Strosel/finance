@@ -7,6 +7,7 @@ import (
 
 	"github.com/marcusolsson/tui-go"
 	"github.com/strosel/noerr"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -51,6 +52,8 @@ func NewAddRView(r *Receipt) *AddRView {
 	root.Addb = tui.NewButton("[Add]")
 	root.Addb.OnActivated(root.Add)
 	root.Prodb = NewScrollList()
+	root.Prodb.SetOnDelete(root.Delete)
+	root.Prodb.SetOnConfirm(root.Edit)
 	boxp := tui.NewVBox(root.Addb, root.Prodb)
 	boxp.SetBorder(true)
 	boxp.SetTitle("Products")
@@ -82,7 +85,12 @@ func (av *AddRView) Save(b *tui.Button) {
 		_, err := db.Collection(rDb).InsertOne(ctx, av.Receipt)
 		noerr.Panic(err)
 	} else {
-		//update
+		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+		_, err := db.Collection(rDb).ReplaceOne(ctx,
+			bson.M{
+				"_id": av.Receipt.ID,
+			}, av.Receipt)
+		noerr.Panic(err)
 	}
 	av.Cancel(b)
 }
@@ -90,6 +98,7 @@ func (av *AddRView) Save(b *tui.Button) {
 func (av *AddRView) Cancel(b *tui.Button) {
 	ui.SetWidget(hView)
 	ui.SetFocusChain(hView)
+	hView.Update("")
 }
 
 func (av *AddRView) Add(b *tui.Button) {
@@ -109,6 +118,41 @@ func (av *AddRView) Update() {
 				p.GetCategory(),
 			),
 		)
+	}
+}
+
+func (av *AddRView) Delete(item string) {
+	for i, p := range av.Receipt.Products {
+		lbl := fmt.Sprintf(
+			"%10v %8v %10v",
+			p.GetName(),
+			p.GetSumS(),
+			p.GetCategory(),
+		)
+
+		if item == lbl {
+			av.Receipt.Products = append(av.Receipt.Products[:i], av.Receipt.Products[i+1:]...)
+			break
+		}
+	}
+	av.Update()
+}
+
+func (av *AddRView) Edit(item string) {
+	for i, p := range av.Receipt.Products {
+		lbl := fmt.Sprintf(
+			"%10v %8v %10v",
+			p.GetName(),
+			p.GetSumS(),
+			p.GetCategory(),
+		)
+
+		if item == lbl {
+			aView := NewAddTView(av, av.Receipt.Products[i])
+			ui.SetWidget(aView)
+			ui.SetFocusChain(aView)
+			break
+		}
 	}
 }
 

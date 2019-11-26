@@ -1,11 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/strosel/noerr"
+
 	"github.com/marcusolsson/tui-go"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type HistoryView struct {
@@ -29,10 +35,12 @@ func GetHistoryView() *HistoryView {
 	root.Summary.Box.Append(tui.NewLabel(fmt.Sprintf("%18v", "")))
 
 	root.History = NewScrollList()
-	root.Update("", root.time)
+	root.Update("")
 	root.History.SetBorder(true)
 	root.History.SetTitle("History")
 	root.History.SetSizePolicy(tui.Expanding, tui.Expanding)
+	root.History.SetOnDelete(root.Delete)
+	root.History.SetOnConfirm(root.Edit)
 
 	root.Input = tui.NewEntry()
 	root.Input.SetFocused(true)
@@ -144,12 +152,60 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%8.2f %8.2f", "Balance", float64(inc-bt)/100., float64(inc-st)/100.)))
 }
 
-func (hv *HistoryView) Update(expand string, t time.Time) {
+func (hv *HistoryView) Update(expand string) {
 	//events := RandEventStub(40)
-	budget := GetBudget(t)
+	budget := GetBudget(hv.time)
 	events := GetEvents(budget.Start, budget.End)
 	hv.updateHistory(events, expand)
 	hv.updateSummary(events, budget)
+}
+
+func (hv *HistoryView) Delete(item string) {
+	ids := idre.FindAllStringSubmatch(item, -1)[0][1]
+	id, err := primitive.ObjectIDFromHex(ids)
+	noerr.Panic(err)
+	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+	if strings.Contains(item, "R") {
+		_, err = db.Collection(rDb).DeleteOne(ctx, bson.M{
+			"_id": id,
+		})
+		noerr.Panic(err)
+	} else {
+		_, err = db.Collection(tDb).DeleteOne(ctx, bson.M{
+			"_id": id,
+		})
+		noerr.Panic(err)
+	}
+
+	hv.Update("")
+}
+
+func (hv *HistoryView) Edit(item string) {
+	ids := idre.FindAllStringSubmatch(item, -1)[0][1]
+	id, err := primitive.ObjectIDFromHex(ids)
+	noerr.Panic(err)
+	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+	if strings.Contains(item, "R") {
+		r := &Receipt{}
+		res := db.Collection(rDb).FindOne(ctx, bson.M{
+			"_id": id,
+		})
+		noerr.Panic(res.Decode(r))
+
+		aView := NewAddRView(r)
+		ui.SetWidget(aView)
+		ui.SetFocusChain(aView)
+	} else {
+		t := &Transaction{}
+		res := db.Collection(tDb).FindOne(ctx, bson.M{
+			"_id": id,
+		})
+		noerr.Panic(res.Decode(t))
+
+		aView := NewAddTView(nil, t)
+		ui.SetWidget(aView)
+		ui.SetFocusChain(aView)
+	}
 }
 
 func (hv *HistoryView) FocusNext(w tui.Widget) tui.Widget {
@@ -186,11 +242,11 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 	cmd := strings.Split(e.Text(), " ")
 	switch strings.ToLower(cmd[0]) {
 	case "update", "u":
-		hv.Update("", hv.time)
+		hv.Update("")
 		fallthrough
 	case "expand", "exp":
 		if len(cmd) > 1 {
-			hv.Update(cmd[1], hv.time)
+			hv.Update(cmd[1])
 		}
 		fallthrough
 	case "add":
@@ -206,18 +262,19 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 			}
 		}
 	case "set":
-		sView := NewSetBView(nil)
+		budget := GetBudget(hv.time)
+		sView := NewSetBView(&budget)
 		ui.SetWidget(sView)
 		ui.SetFocusChain(sView)
 		//todo check for existing in given timeframe, use that
 	case "time", "view":
 		if len(cmd) > 1 {
 			if t, err := time.Parse(timefs, cmd[1]); err == nil {
-				hv.Update("", t)
 				hv.time = t
 			} else if strings.ToLower(cmd[1]) == "now" {
 				hv.time = time.Now()
 			}
+			hv.Update("")
 		}
 	}
 
