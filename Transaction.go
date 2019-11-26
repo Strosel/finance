@@ -28,6 +28,10 @@ func (t Transaction) GetSum() int {
 	return t.Sum
 }
 
+func (t Transaction) GetSumS() string {
+	return fmt.Sprintf("%8.2f", float64(t.Sum)/100.)
+}
+
 func (t Transaction) GetCategory() string {
 	return t.Category
 }

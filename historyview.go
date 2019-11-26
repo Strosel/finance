@@ -53,10 +53,10 @@ func (hv *HistoryView) updateHistory(events []Event, expand string) {
 	for _, e := range events {
 		hv.History.Append(
 			fmt.Sprintf(
-				"[%v] %10v %5v %10v %v",
+				"[%v] %10v %8v %10v %v",
 				e.GetTime().Format("06-01-02 15:04"),
 				e.GetName(),
-				e.GetSum(),
+				e.GetSumS(),
 				e.GetCategory(),
 				e.GetType(),
 			),
@@ -66,10 +66,10 @@ func (hv *HistoryView) updateHistory(events []Event, expand string) {
 			for _, p := range r.Products {
 				hv.History.Append(
 					fmt.Sprintf(
-						"%16v %10v %5v %10v %v",
+						"%16v %10v %8v %10v %v",
 						"",
 						p.GetName(),
-						p.GetSum(),
+						p.GetSumS(),
 						p.GetCategory(),
 						p.GetType(),
 					),

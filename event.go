@@ -15,6 +15,7 @@ type Event interface {
 	GetTime() time.Time
 	GetName() string
 	GetSum() int
+	GetSumS() string
 	GetCategory() string
 	GetType() string
 }

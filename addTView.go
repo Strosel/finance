@@ -89,7 +89,7 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 	} else {
 		root.Box.SetTitle("Update")
 		root.Namei.SetText(root.Transaction.Name)
-		root.Sumi.SetText(fmt.Sprintf("%8.2f", float64(root.Transaction.Sum)/100))
+		root.Sumi.SetText(root.Transaction.GetSumS())
 		root.Cati.SetText(root.Transaction.Category)
 		root.Notei.SetText(root.Transaction.Note)
 	}

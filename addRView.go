@@ -103,9 +103,9 @@ func (av *AddRView) Update() {
 	for _, p := range av.Receipt.Products {
 		av.Prodb.Append(
 			fmt.Sprintf(
-				"%10v %8.2f %10v",
+				"%10v %8v %10v",
 				p.GetName(),
-				float64(p.GetSum())/100,
+				p.GetSumS(),
 				p.GetCategory(),
 			),
 		)
