@@ -18,7 +18,7 @@ type Budget struct {
 	Income   map[string]Income  `bson:"income,omitempty"`
 }
 
-func GetBudget(db mongo.Collection, to time.Duration, t time.Time) Budget {
+func GetBudget(db *mongo.Collection, to time.Duration, t time.Time) Budget {
 	bgt := Budget{}
 	ctx, _ := context.WithTimeout(context.Background(), to)
 	res := db.FindOne(ctx, bson.M{

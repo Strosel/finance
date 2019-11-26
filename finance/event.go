@@ -18,7 +18,7 @@ type Event interface {
 	GetType() string
 }
 
-func GetEvents(db mongo.Collection, to time.Duration, start, end time.Time) ([]Event, error) {
+func GetEvents(db *mongo.Collection, to time.Duration, start, end time.Time) ([]Event, error) {
 	trs := []Transaction{}
 	res := []Receipt{}
 	ctx, _ := context.WithTimeout(context.Background(), to)
