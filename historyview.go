@@ -154,7 +154,7 @@ func (hv *HistoryView) updateSummary(events []finance.Event, budget finance.Budg
 func (hv *HistoryView) Update(expand string) {
 	budget, err := finance.GetBudget(db.Collection(bDb), dTimeout, hv.time)
 	ResolveError(err)
-	events, err := finance.GetEvents(db.Collection(bDb), dTimeout, budget.Start, budget.End)
+	events, err := finance.GetEvents(db.Collection(tDb), db.Collection(rDb), dTimeout, budget.Start, budget.End)
 	ResolveError(err)
 	hv.updateHistory(events, expand)
 	hv.updateSummary(events, budget)

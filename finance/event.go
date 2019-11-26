@@ -18,11 +18,12 @@ type Event interface {
 	GetType() string
 }
 
-func GetEvents(db *mongo.Collection, to time.Duration, start, end time.Time) ([]Event, error) {
+func GetEvents(dbt, dbr *mongo.Collection, to time.Duration, start, end time.Time) ([]Event, error) {
 	trs := []Transaction{}
 	res := []Receipt{}
+
 	ctx, _ := context.WithTimeout(context.Background(), to)
-	curs, err := db.Find(ctx, &bson.D{bson.E{
+	curs, err := dbt.Find(ctx, &bson.D{bson.E{
 		Key: "datetime",
 		Value: bson.D{
 			bson.E{Key: "$gte", Value: start},
@@ -37,7 +38,7 @@ func GetEvents(db *mongo.Collection, to time.Duration, start, end time.Time) ([]
 		return nil, err
 	}
 
-	curs, err = db.Find(ctx, &bson.D{bson.E{
+	curs, err = dbr.Find(ctx, &bson.D{bson.E{
 		Key: "datetime",
 		Value: bson.D{
 			bson.E{Key: "$gte", Value: start},
