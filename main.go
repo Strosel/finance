@@ -13,9 +13,9 @@ import (
 
 const (
 	savestr  = "spar|spara|sparande|save|saving|savings"
-	rDb      = "testR"
-	tDb      = "test"
-	bDb      = "testB"
+	rDb      = "receipts"     //"testR"
+	tDb      = "transactions" //"test"
+	bDb      = "budgets"      //"testB"
 	dTimeout = time.Minute
 	timef    = "06-01-02 15:04"
 	timefs   = "06-01-02"
