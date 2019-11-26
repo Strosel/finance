@@ -10,6 +10,9 @@ type ScrollList struct {
 	store  *tui.List
 
 	sel int
+
+	delete  func(string)
+	confirm func(string)
 }
 
 func NewScrollList() *ScrollList {
@@ -59,6 +62,19 @@ func (sl *ScrollList) OnKeyEvent(ev tui.KeyEvent) {
 			sl.store.Select(0)
 		case "Right":
 			sl.store.Select(l - 1)
+		case "Backspace", "Backspace2", "Delete":
+			if sl.delete != nil {
+				sl.delete(sl.store.SelectedItem())
+				if i-1 == -1 {
+					sl.store.Select(0)
+				} else {
+					sl.store.Select(i - 1)
+				}
+			}
+		case "Enter":
+			if sl.confirm != nil {
+				sl.confirm(sl.store.SelectedItem())
+			}
 		}
 	}
 }
@@ -67,7 +83,19 @@ func (sl *ScrollList) SetFocused(b bool) {
 	if b {
 		sl.store.SetSelected(sl.sel)
 	} else {
-		sl.sel = sl.store.Selected()
+		if s := sl.store.Selected(); s != -1 {
+			sl.sel = s
+		} else {
+			sl.sel = 0
+		}
 		sl.store.SetSelected(-1)
 	}
+}
+
+func (sl *ScrollList) SetOnDelete(f func(string)) {
+	sl.delete = f
+}
+
+func (sl *ScrollList) SetOnConfirm(f func(string)) {
+	sl.confirm = f
 }
