@@ -8,5 +8,5 @@ type Income struct {
 }
 
 func (i *Income) Received() bool {
-	return time.Now().Before(i.Date)
+	return !time.Now().Before(i.Date)
 }
