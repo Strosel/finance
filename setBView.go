@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/strosel/noerr"
 
@@ -110,8 +113,9 @@ func NewSetBView(b *Budget) *SetBView {
 	root.Box = tui.NewVBox(gbox, tbox, bbox)
 
 	if b.ID.IsZero() {
+		root.Dateii.SetText(time.Now().Format("06-01-02 15:04"))
 		root.Starti.SetText(time.Now().Format("06-01-02 15:04"))
-		root.Endi.SetText(time.Now().Add(time.Hour * 24 * 30).Format("06-01-02 15:04"))
+		root.Endi.SetText(time.Now().AddDate(0, 1, -1).Format("06-01-02 15:04"))
 	} else {
 		root.Starti.SetText(root.Budget.Start.Format("06-01-02 15:04"))
 		root.Endi.SetText(root.Budget.End.Format("06-01-02 15:04"))
@@ -131,6 +135,10 @@ func (sv *SetBView) Addi(b *tui.Button) {
 		Date: date,
 	}
 	sv.Update()
+
+	sv.Nameii.SetText("")
+	sv.Sumii.SetText("")
+	sv.Dateii.SetText(time.Now().Format("06-01-02 15:04"))
 }
 
 func (sv *SetBView) Adds(b *tui.Button) {
@@ -138,6 +146,9 @@ func (sv *SetBView) Adds(b *tui.Button) {
 	noerr.Panic(err)
 	sv.Budget.Spending[sv.Namesi.Text()] = int(100 * sum)
 	sv.Update()
+
+	sv.Namesi.SetText("")
+	sv.Sumsi.SetText("")
 }
 
 func (sv *SetBView) Update() {
@@ -145,16 +156,25 @@ func (sv *SetBView) Update() {
 	sv.Sets.Clear()
 
 	for n, i := range sv.Budget.Income {
-		sv.Seti.Append(fmt.Sprintf("%-10v %16v %8.3f", n, i.Date.Format("06-01-02 15:04"), float64(i.Sum)/100.))
+		sv.Seti.Append(fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format("06-01-02 15:04"), float64(i.Sum)/100.))
 	}
 
 	for n, s := range sv.Budget.Spending {
-		sv.Sets.Append(fmt.Sprintf("%-20v %8.3f", n, float64(s)/100.))
+		sv.Sets.Append(fmt.Sprintf("%-10v %8.2f", n, float64(s)/100.))
 	}
 
 }
 
 func (sv *SetBView) Save(b *tui.Button) {
+	if sv.Budget.ID.IsZero() {
+		sv.Budget.ID = primitive.NewObjectID()
+		ctx, _ := context.WithTimeout(context.Background(), time.Minute)
+		_, err := db.Collection("testB").InsertOne(ctx, sv.Budget)
+		noerr.Panic(err)
+	} else {
+		//update
+	}
+	sv.Cancel(b)
 }
 
 func (sv *SetBView) Cancel(b *tui.Button) {

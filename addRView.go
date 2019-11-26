@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/marcusolsson/tui-go"
 	"github.com/strosel/noerr"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AddRView struct {
@@ -74,7 +76,15 @@ func (av *AddRView) Save(b *tui.Button) {
 	noerr.Panic(err)
 	av.Receipt.Store = av.Storei.Text()
 	//! handle errors
-	//add to db
+	if av.Receipt.ID.IsZero() {
+		av.Receipt.ID = primitive.NewObjectID()
+		ctx, _ := context.WithTimeout(context.Background(), time.Minute)
+		_, err := db.Collection("testR").InsertOne(ctx, av.Receipt)
+		noerr.Panic(err)
+	} else {
+		//update
+	}
+	av.Cancel(b)
 }
 
 func (av *AddRView) Cancel(b *tui.Button) {

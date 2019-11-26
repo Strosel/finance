@@ -200,6 +200,7 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 		sView := NewSetBView(nil)
 		ui.SetWidget(sView)
 		ui.SetFocusChain(sView)
+		//todo check for existing in given timeframe, use that
 	}
 
 	e.SetText("")

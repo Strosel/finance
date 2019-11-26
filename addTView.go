@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/strosel/noerr"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/marcusolsson/tui-go"
 )
@@ -108,11 +110,18 @@ func (av *AddTView) Save(b *tui.Button) {
 	if av.Parent == nil {
 		av.Transaction.Datetime, err = time.Parse("06-01-02 15:04", av.Datei.Text())
 		noerr.Panic(err)
-		//save to db
+		if av.Transaction.ID.IsZero() {
+			av.Transaction.ID = primitive.NewObjectID()
+			ctx, _ := context.WithTimeout(context.Background(), time.Minute)
+			_, err := db.Collection("test").InsertOne(ctx, av.Transaction)
+			noerr.Panic(err)
+		} else {
+			//update
+		}
 	} else {
 		av.Parent.Receipt.Products = append(av.Parent.Receipt.Products, *av.Transaction)
-		av.Cancel(b)
 	}
+	av.Cancel(b)
 }
 
 func (av *AddTView) Cancel(b *tui.Button) {
