@@ -12,7 +12,7 @@ const savestr = "spar|spara|sparande|save|saving|savings"
 type HistoryView struct {
 	*tui.Box
 	Summary *ScrollBox
-	History *ScrollBox
+	History *ScrollList
 	Input   *tui.Entry
 }
 
@@ -25,7 +25,7 @@ func GetHistoryView() *HistoryView {
 	root.Summary.SetSizePolicy(tui.Maximum, tui.Maximum)
 	root.Summary.Box.Append(tui.NewLabel(fmt.Sprintf("%18v", "")))
 
-	root.History = NewScrollBox()
+	root.History = NewScrollList()
 	root.Update("")
 	root.History.SetBorder(true)
 	root.History.SetTitle("History")
@@ -51,23 +51,29 @@ func (hv *HistoryView) updateHistory(events []Event, expand string) {
 	hv.History.Clear()
 
 	for _, e := range events {
-		hv.History.Append(tui.NewHBox(
-			tui.NewLabel(fmt.Sprintf("[%v]", e.GetTime().Format("06-01-02 15:04"))),
-			tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetName()))),
-			tui.NewLabel(fmt.Sprintf("%5v", e.GetSum())),
-			tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", e.GetCategory()))),
-			tui.NewLabel(e.GetType()),
-		))
+		hv.History.Append(
+			fmt.Sprintf(
+				"[%v] %10v %5v %10v %v",
+				e.GetTime().Format("06-01-02 15:04"),
+				e.GetName(),
+				e.GetSum(),
+				e.GetCategory(),
+				e.GetType(),
+			),
+		)
 		if e.GetType() == "R/"+expand || e.GetType() == expand {
 			r := e.(Receipt)
 			for _, p := range r.Products {
-				hv.History.Append(tui.NewHBox(
-					tui.NewLabel("                "),
-					tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", p.GetName()))),
-					tui.NewLabel(fmt.Sprintf("%5v", p.GetSum())),
-					tui.NewPadder(1, 0, tui.NewLabel(fmt.Sprintf("%10v", p.GetCategory()))),
-					tui.NewLabel(p.GetType()),
-				))
+				hv.History.Append(
+					fmt.Sprintf(
+						"%16v %10v %5v %10v %v",
+						"",
+						p.GetName(),
+						p.GetSum(),
+						p.GetCategory(),
+						p.GetType(),
+					),
+				)
 			}
 		}
 	}
