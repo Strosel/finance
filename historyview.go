@@ -185,10 +185,10 @@ func (hv *HistoryView) FocusDefault() tui.Widget {
 func (hv *HistoryView) Command(e *tui.Entry) {
 	cmd := strings.Split(e.Text(), " ")
 	switch strings.ToLower(cmd[0]) {
-	case "update":
+	case "update", "u":
 		hv.Update("", hv.time)
 		fallthrough
-	case "expand":
+	case "expand", "exp":
 		if len(cmd) > 1 {
 			hv.Update(cmd[1], hv.time)
 		}
