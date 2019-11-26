@@ -166,6 +166,10 @@ func (sv *SetBView) Update() {
 }
 
 func (sv *SetBView) Save(b *tui.Button) {
+	sv.Budget.Start, err = time.Parse(timef, sv.Starti.Text())
+	noerr.Panic(err)
+	sv.Budget.End, err = time.Parse(timef, sv.Endi.Text())
+	noerr.Panic(err)
 	if sv.Budget.ID.IsZero() {
 		sv.Budget.ID = primitive.NewObjectID()
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
