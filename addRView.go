@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/marcusolsson/tui-go"
-	"github.com/strosel/noerr"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -20,6 +19,8 @@ type AddRView struct {
 	Addb    *tui.Button
 	Prodb   *ScrollList
 
+	lbls map[string]*tui.Label
+
 	Receipt *Receipt
 }
 
@@ -29,12 +30,14 @@ func NewAddRView(r *Receipt) *AddRView {
 	}
 	root := AddRView{
 		Receipt: r,
+		lbls:    map[string]*tui.Label{},
 	}
 
 	root.Datei = tui.NewEntry()
 	root.Datei.SetFocused(true)
 	root.Datei.SetSizePolicy(tui.Expanding, tui.Minimum)
-	boxd := tui.NewHBox(tui.NewLabel(fmt.Sprintf("%25v", "Date (yy-mm-dd hh:mm): ")), root.Datei)
+	root.lbls["date"] = tui.NewLabel(fmt.Sprintf("%25v", "Date (yy-mm-dd hh:mm): "))
+	boxd := tui.NewHBox(root.lbls["date"], root.Datei)
 	boxd.SetSizePolicy(tui.Expanding, tui.Maximum)
 
 	root.Storei = tui.NewEntry()
@@ -75,22 +78,35 @@ func NewAddRView(r *Receipt) *AddRView {
 }
 
 func (av *AddRView) Save(b *tui.Button) {
+	for _, l := range av.lbls {
+		l.SetStyleName("normal")
+	}
+
 	av.Receipt.Datetime, err = time.Parse(timef, av.Datei.Text())
-	noerr.Panic(err)
+	if err != nil {
+		av.lbls["date"].SetStyleName("warning")
+		return
+	}
 	av.Receipt.Store = av.Storei.Text()
 	//! handle errors
 	if av.Receipt.ID.IsZero() {
 		av.Receipt.ID = primitive.NewObjectID()
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 		_, err := db.Collection(rDb).InsertOne(ctx, av.Receipt)
-		noerr.Panic(err)
+		if err != nil {
+			ui.SetWidget(NewErrorView(err))
+			ui.SetFocusChain(nil)
+		}
 	} else {
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 		_, err := db.Collection(rDb).ReplaceOne(ctx,
 			bson.M{
 				"_id": av.Receipt.ID,
 			}, av.Receipt)
-		noerr.Panic(err)
+		if err != nil {
+			ui.SetWidget(NewErrorView(err))
+			ui.SetFocusChain(nil)
+		}
 	}
 	av.Cancel(b)
 }

@@ -8,8 +8,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/strosel/noerr"
-
 	"github.com/marcusolsson/tui-go"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -163,18 +161,27 @@ func (hv *HistoryView) Update(expand string) {
 func (hv *HistoryView) Delete(item string) {
 	ids := idre.FindAllStringSubmatch(item, -1)[0][1]
 	id, err := primitive.ObjectIDFromHex(ids)
-	noerr.Panic(err)
+	if err != nil {
+		ui.SetWidget(NewErrorView(err))
+		ui.SetFocusChain(nil)
+	}
 	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 	if strings.Contains(item, "R") {
 		_, err = db.Collection(rDb).DeleteOne(ctx, bson.M{
 			"_id": id,
 		})
-		noerr.Panic(err)
+		if err != nil {
+			ui.SetWidget(NewErrorView(err))
+			ui.SetFocusChain(nil)
+		}
 	} else {
 		_, err = db.Collection(tDb).DeleteOne(ctx, bson.M{
 			"_id": id,
 		})
-		noerr.Panic(err)
+		if err != nil {
+			ui.SetWidget(NewErrorView(err))
+			ui.SetFocusChain(nil)
+		}
 	}
 
 	hv.Update("")
@@ -183,14 +190,21 @@ func (hv *HistoryView) Delete(item string) {
 func (hv *HistoryView) Edit(item string) {
 	ids := idre.FindAllStringSubmatch(item, -1)[0][1]
 	id, err := primitive.ObjectIDFromHex(ids)
-	noerr.Panic(err)
+	if err != nil {
+		ui.SetWidget(NewErrorView(err))
+		ui.SetFocusChain(nil)
+	}
 	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 	if strings.Contains(item, "R") {
 		r := &Receipt{}
 		res := db.Collection(rDb).FindOne(ctx, bson.M{
 			"_id": id,
 		})
-		noerr.Panic(res.Decode(r))
+		err = res.Decode(r)
+		if err != nil {
+			ui.SetWidget(NewErrorView(err))
+			ui.SetFocusChain(nil)
+		}
 
 		aView := NewAddRView(r)
 		ui.SetWidget(aView)
@@ -200,7 +214,11 @@ func (hv *HistoryView) Edit(item string) {
 		res := db.Collection(tDb).FindOne(ctx, bson.M{
 			"_id": id,
 		})
-		noerr.Panic(res.Decode(t))
+		err = res.Decode(t)
+		if err != nil {
+			ui.SetWidget(NewErrorView(err))
+			ui.SetFocusChain(nil)
+		}
 
 		aView := NewAddTView(nil, t)
 		ui.SetWidget(aView)

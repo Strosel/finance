@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/strosel/noerr"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -24,6 +23,8 @@ type AddTView struct {
 	Saveb   *tui.Button
 	Cancelb *tui.Button
 
+	lbls map[string]*tui.Label
+
 	Parent      *AddRView
 	Transaction *Transaction
 }
@@ -35,6 +36,7 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 	root := AddTView{
 		Parent:      p,
 		Transaction: t,
+		lbls:        map[string]*tui.Label{},
 	}
 
 	var boxd *tui.Box
@@ -42,7 +44,8 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 		root.Datei = tui.NewEntry()
 		root.Datei.SetFocused(true)
 		root.Datei.SetSizePolicy(tui.Expanding, tui.Minimum)
-		boxd = tui.NewHBox(tui.NewLabel(fmt.Sprintf("%25v", "Date (yy-mm-dd hh:mm): ")), root.Datei)
+		root.lbls["date"] = tui.NewLabel(fmt.Sprintf("%25v", "Date (yy-mm-dd hh:mm): "))
+		boxd = tui.NewHBox(root.lbls["date"], root.Datei)
 		boxd.SetSizePolicy(tui.Expanding, tui.Maximum)
 	}
 
@@ -53,7 +56,8 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 
 	root.Sumi = tui.NewEntry()
 	root.Sumi.SetSizePolicy(tui.Expanding, tui.Minimum)
-	rbox := tui.NewHBox(tui.NewLabel(fmt.Sprintf("%25v", "Sum: ")), root.Sumi)
+	root.lbls["sum"] = tui.NewLabel(fmt.Sprintf("%25v", "Sum: "))
+	rbox := tui.NewHBox(root.lbls["sum"], root.Sumi)
 	rbox.SetSizePolicy(tui.Expanding, tui.Maximum)
 
 	root.Cati = tui.NewEntry()
@@ -100,30 +104,46 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 }
 
 func (av *AddTView) Save(b *tui.Button) {
+	for _, l := range av.lbls {
+		l.SetStyleName("normal")
+	}
+
 	av.Transaction.Name = av.Namei.Text()
 	av.Transaction.Category = av.Cati.Text()
 	av.Transaction.Note = av.Notei.Text()
 
 	sum, err := strconv.Atoi(flre.ReplaceAllString(av.Sumi.Text(), ""))
-	noerr.Panic(err)
+	if err != nil {
+		av.lbls["sum"].SetStyleName("warning")
+		return
+	}
 	av.Transaction.Sum = sum
 
 	//! handle errors
 	if av.Parent == nil {
 		av.Transaction.Datetime, err = time.Parse(timef, av.Datei.Text())
-		noerr.Panic(err)
+		if err != nil {
+			av.lbls["date"].SetStyleName("warning")
+			return
+		}
 		if av.Transaction.ID.IsZero() {
 			av.Transaction.ID = primitive.NewObjectID()
 			ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 			_, err := db.Collection(tDb).InsertOne(ctx, av.Transaction)
-			noerr.Panic(err)
+			if err != nil {
+				ui.SetWidget(NewErrorView(err))
+				ui.SetFocusChain(nil)
+			}
 		} else {
 			ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 			_, err := db.Collection(tDb).ReplaceOne(ctx,
 				bson.M{
 					"_id": av.Transaction.ID,
 				}, av.Transaction)
-			noerr.Panic(err)
+			if err != nil {
+				ui.SetWidget(NewErrorView(err))
+				ui.SetFocusChain(nil)
+			}
 		}
 	} else {
 		if av.Transaction.ID.IsZero() {

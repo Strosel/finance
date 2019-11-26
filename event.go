@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/strosel/noerr"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -61,9 +60,16 @@ func GetEvents(start, end time.Time) []Event {
 			bson.E{Key: "$gte", Value: start},
 			bson.E{Key: "$lte", Value: end},
 		}}})
-	noerr.Panic(err)
+	if err != nil {
+		ui.SetWidget(NewErrorView(err))
+		ui.SetFocusChain(nil)
+	}
 	defer curs.Close(ctx)
-	noerr.Panic(curs.All(ctx, &trs))
+	err = curs.All(ctx, &trs)
+	if err != nil {
+		ui.SetWidget(NewErrorView(err))
+		ui.SetFocusChain(nil)
+	}
 
 	curs, err = db.Collection(rDb).Find(ctx, &bson.D{bson.E{
 		Key: "datetime",
@@ -71,9 +77,16 @@ func GetEvents(start, end time.Time) []Event {
 			bson.E{Key: "$gte", Value: start},
 			bson.E{Key: "$lte", Value: end},
 		}}})
-	noerr.Panic(err)
+	if err != nil {
+		ui.SetWidget(NewErrorView(err))
+		ui.SetFocusChain(nil)
+	}
 	defer curs.Close(ctx)
-	noerr.Panic(curs.All(ctx, &res))
+	err = curs.All(ctx, &res)
+	if err != nil {
+		ui.SetWidget(NewErrorView(err))
+		ui.SetFocusChain(nil)
+	}
 
 	//TODO SORT
 	evs := []Event{}

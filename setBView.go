@@ -9,8 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/strosel/noerr"
-
 	"github.com/marcusolsson/tui-go"
 )
 
@@ -33,6 +31,10 @@ type SetBView struct {
 	Addsb  *tui.Button
 	Sets   *ScrollList
 
+	lblsi map[string]*tui.Label
+	lblss map[string]*tui.Label
+	lblsg map[string]*tui.Label
+
 	Budget *Budget
 }
 
@@ -45,6 +47,17 @@ func NewSetBView(b *Budget) *SetBView {
 	}
 	root := SetBView{
 		Budget: b,
+		lblsi: map[string]*tui.Label{
+			"sum":  tui.NewLabel("Sum:"),
+			"date": tui.NewLabel("Date (yy-mm-dd):"),
+		},
+		lblss: map[string]*tui.Label{
+			"sum": tui.NewLabel("Sum:"),
+		},
+		lblsg: map[string]*tui.Label{
+			"start": tui.NewLabel("Start (yy-mm-dd):"),
+			"end":   tui.NewLabel("End (yy-mm-dd):"),
+		},
 	}
 
 	root.Nameii = tui.NewEntry()
@@ -63,9 +76,9 @@ func NewSetBView(b *Budget) *SetBView {
 	inbox := tui.NewVBox(
 		tui.NewLabel("Name:"),
 		root.Nameii,
-		tui.NewLabel("Sum:"),
+		root.lblsi["sum"],
 		root.Sumii,
-		tui.NewLabel("Date (yy-mm-dd hh:mm):"),
+		root.lblsi["date"],
 		root.Dateii,
 		tui.NewSpacer(),
 		root.Addib,
@@ -87,7 +100,7 @@ func NewSetBView(b *Budget) *SetBView {
 	spbox := tui.NewVBox(
 		tui.NewLabel("Name:"),
 		root.Namesi,
-		tui.NewLabel("Sum:"),
+		root.lblss["sum"],
 		root.Sumsi,
 		tui.NewSpacer(),
 		root.Addsb,
@@ -101,9 +114,9 @@ func NewSetBView(b *Budget) *SetBView {
 	root.Starti = tui.NewEntry()
 	root.Endi = tui.NewEntry()
 	tbox := tui.NewVBox(
-		tui.NewLabel("Start (yy-mm-dd hh:mm):"),
+		root.lblsg["start"],
 		root.Starti,
-		tui.NewLabel("End (yy-mm-dd hh:mm):"),
+		root.lblsg["end"],
 		root.Endi,
 	)
 	tbox.SetBorder(true)
@@ -117,12 +130,13 @@ func NewSetBView(b *Budget) *SetBView {
 	root.Box = tui.NewVBox(gbox, tbox, bbox)
 
 	if b.ID.IsZero() {
-		root.Dateii.SetText(time.Now().Format(timef))
-		root.Starti.SetText(time.Now().Format(timef))
-		root.Endi.SetText(time.Now().AddDate(0, 1, -1).Format(timef))
+		root.Dateii.SetText(time.Now().Format(timefs))
+		root.Starti.SetText(time.Now().Format(timefs))
+		root.Endi.SetText(time.Now().AddDate(0, 1, -1).Format(timefs))
 	} else {
-		root.Starti.SetText(root.Budget.Start.Format(timef))
-		root.Endi.SetText(root.Budget.End.Format(timef))
+		root.Dateii.SetText(time.Now().Format(timefs))
+		root.Starti.SetText(root.Budget.Start.Format(timefs))
+		root.Endi.SetText(root.Budget.End.Format(timefs))
 	}
 
 	root.Update()
@@ -130,10 +144,20 @@ func NewSetBView(b *Budget) *SetBView {
 }
 
 func (sv *SetBView) Addi(b *tui.Button) {
+	for _, l := range sv.lblsi {
+		l.SetStyleName("normal")
+	}
+
 	sum, err := strconv.Atoi(flre.ReplaceAllString(sv.Sumii.Text(), ""))
-	noerr.Fatal(err)
-	date, err := time.Parse(timef, sv.Dateii.Text())
-	noerr.Panic(err)
+	if err != nil {
+		sv.lblsi["sum"].SetStyleName("warning")
+		return
+	}
+	date, err := time.Parse(timefs, sv.Dateii.Text())
+	if err != nil {
+		sv.lblsi["date"].SetStyleName("warning")
+		return
+	}
 	sv.Budget.Income[sv.Nameii.Text()] = Income{
 		Sum:  sum,
 		Date: date,
@@ -142,12 +166,19 @@ func (sv *SetBView) Addi(b *tui.Button) {
 
 	sv.Nameii.SetText("")
 	sv.Sumii.SetText("")
-	sv.Dateii.SetText(time.Now().Format(timef))
+	sv.Dateii.SetText(time.Now().Format(timefs))
 }
 
 func (sv *SetBView) Adds(b *tui.Button) {
+	for _, l := range sv.lblss {
+		l.SetStyleName("normal")
+	}
+
 	sum, err := strconv.Atoi(flre.ReplaceAllString(sv.Sumsi.Text(), ""))
-	noerr.Panic(err)
+	if err != nil {
+		sv.lblss["sum"].SetStyleName("warning")
+		return
+	}
 	sv.Budget.Spending[sv.Namesi.Text()] = sum
 	sv.Update()
 
@@ -157,11 +188,11 @@ func (sv *SetBView) Adds(b *tui.Button) {
 
 func (sv *SetBView) Editi(item string) {
 	for n, i := range sv.Budget.Income {
-		lbl := fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timef), float64(i.Sum)/100.)
+		lbl := fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timefs), float64(i.Sum)/100.)
 
 		if item == lbl {
 			sv.Nameii.SetText(n)
-			sv.Dateii.SetText(i.Date.Format(timef))
+			sv.Dateii.SetText(i.Date.Format(timefs))
 			sv.Sumii.SetText(fmt.Sprintf("%.2f", float64(i.Sum)/100.))
 			delete(sv.Budget.Income, n)
 			break
@@ -184,7 +215,7 @@ func (sv *SetBView) Edits(item string) {
 
 func (sv *SetBView) Deli(item string) {
 	for n, i := range sv.Budget.Income {
-		lbl := fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timef), float64(i.Sum)/100.)
+		lbl := fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timefs), float64(i.Sum)/100.)
 
 		if item == lbl {
 			delete(sv.Budget.Income, n)
@@ -211,7 +242,7 @@ func (sv *SetBView) Update() {
 	sv.Sets.Clear()
 
 	for n, i := range sv.Budget.Income {
-		sv.Seti.Append(fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timef), float64(i.Sum)/100.))
+		sv.Seti.Append(fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timefs), float64(i.Sum)/100.))
 	}
 
 	for n, s := range sv.Budget.Spending {
@@ -221,22 +252,38 @@ func (sv *SetBView) Update() {
 }
 
 func (sv *SetBView) Save(b *tui.Button) {
-	sv.Budget.Start, err = time.Parse(timef, sv.Starti.Text())
-	noerr.Panic(err)
-	sv.Budget.End, err = time.Parse(timef, sv.Endi.Text())
-	noerr.Panic(err)
+	for _, l := range sv.lblsg {
+		l.SetStyleName("normal")
+	}
+
+	sv.Budget.Start, err = time.Parse(timefs, sv.Starti.Text())
+	if err != nil {
+		sv.lblsg["start"].SetStyleName("warning")
+		return
+	}
+	sv.Budget.End, err = time.Parse(timefs, sv.Endi.Text())
+	if err != nil {
+		sv.lblsg["end"].SetStyleName("warning")
+		return
+	}
 	if sv.Budget.ID.IsZero() {
 		sv.Budget.ID = primitive.NewObjectID()
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 		_, err := db.Collection(bDb).InsertOne(ctx, sv.Budget)
-		noerr.Panic(err)
+		if err != nil {
+			ui.SetWidget(NewErrorView(err))
+			ui.SetFocusChain(nil)
+		}
 	} else {
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 		_, err := db.Collection(bDb).ReplaceOne(ctx,
 			bson.M{
 				"_id": sv.Budget.ID,
 			}, sv.Budget)
-		noerr.Panic(err)
+		if err != nil {
+			ui.SetWidget(NewErrorView(err))
+			ui.SetFocusChain(nil)
+		}
 	}
 	sv.Cancel(b)
 }

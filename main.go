@@ -35,12 +35,12 @@ var (
 func main() {
 	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 	db, err = Connect(ctx, "finance")
-	noerr.Panic(err)
+	noerr.Fatal(err)
 
 	hView = GetHistoryView()
 
 	ui, err = tui.New(hView)
-	noerr.Panic(err)
+	noerr.Fatal(err)
 
 	ui.SetKeybinding("Esc", func() { ui.Quit() })
 	ui.SetFocusChain(hView)
