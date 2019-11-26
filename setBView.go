@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/marcusolsson/tui-go"
+	"github.com/strosel/finance/finance"
 )
 
 type SetBView struct {
@@ -35,14 +36,14 @@ type SetBView struct {
 	lblss map[string]*tui.Label
 	lblsg map[string]*tui.Label
 
-	Budget *Budget
+	Budget *finance.Budget
 }
 
-func NewSetBView(b *Budget) *SetBView {
+func NewSetBView(b *finance.Budget) *SetBView {
 	if b == nil {
-		b = &Budget{
+		b = &finance.Budget{
 			Spending: map[string]int{},
-			Income:   map[string]Income{},
+			Income:   map[string]finance.Income{},
 		}
 	}
 	root := SetBView{
@@ -158,7 +159,7 @@ func (sv *SetBView) Addi(b *tui.Button) {
 		sv.lblsi["date"].SetStyleName("warning")
 		return
 	}
-	sv.Budget.Income[sv.Nameii.Text()] = Income{
+	sv.Budget.Income[sv.Nameii.Text()] = finance.Income{
 		Sum:  sum,
 		Date: date,
 	}

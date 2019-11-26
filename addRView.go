@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/marcusolsson/tui-go"
+	"github.com/strosel/finance/finance"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -21,12 +22,12 @@ type AddRView struct {
 
 	lbls map[string]*tui.Label
 
-	Receipt *Receipt
+	Receipt *finance.Receipt
 }
 
-func NewAddRView(r *Receipt) *AddRView {
+func NewAddRView(r *finance.Receipt) *AddRView {
 	if r == nil {
-		r = &Receipt{}
+		r = &finance.Receipt{}
 	}
 	root := AddRView{
 		Receipt: r,

@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/marcusolsson/tui-go"
+	"github.com/strosel/finance/finance"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -56,7 +57,7 @@ func GetHistoryView() *HistoryView {
 	return &root
 }
 
-func (hv *HistoryView) updateHistory(events []Event, expand string) {
+func (hv *HistoryView) updateHistory(events []finance.Event, expand string) {
 	hv.History.Clear()
 
 	for _, e := range events {
@@ -71,7 +72,7 @@ func (hv *HistoryView) updateHistory(events []Event, expand string) {
 			),
 		)
 		if e.GetType() == "R/"+expand || e.GetType() == expand {
-			r := e.(Receipt)
+			r := e.(finance.Receipt)
 			for _, p := range r.Products {
 				hv.History.Append(
 					fmt.Sprintf(
@@ -88,20 +89,20 @@ func (hv *HistoryView) updateHistory(events []Event, expand string) {
 	}
 }
 
-func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
+func (hv *HistoryView) updateSummary(events []finance.Event, budget finance.Budget) {
 	hv.Summary.Clear()
 
 	spent := map[string]int{}
 	for _, e := range events {
 		switch v := e.(type) {
-		case Transaction:
+		case finance.Transaction:
 			cat := e.GetCategory()
 			if _, ok := budget.Spending[cat]; ok {
 				spent[cat] += e.GetSum()
 			} else {
 				spent["other"] += e.GetSum()
 			}
-		case Receipt:
+		case finance.Receipt:
 			for _, p := range v.Products {
 				cat := p.GetCategory()
 				if _, ok := budget.Spending[cat]; ok {
@@ -151,8 +152,16 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 }
 
 func (hv *HistoryView) Update(expand string) {
-	budget := GetBudget(hv.time)
-	events := GetEvents(budget.Start, budget.End)
+	budget, err := finance.GetBudget(db.Collection(bDb), dTimeout, hv.time)
+	if err != nil {
+		ui.SetWidget(NewErrorView(err))
+		ui.SetFocusChain(nil)
+	}
+	events, err := finance.GetEvents(db.Collection(bDb), dTimeout, budget.Start, budget.End)
+	if err != nil {
+		ui.SetWidget(NewErrorView(err))
+		ui.SetFocusChain(nil)
+	}
 	hv.updateHistory(events, expand)
 	hv.updateSummary(events, budget)
 }
@@ -195,7 +204,7 @@ func (hv *HistoryView) Edit(item string) {
 	}
 	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 	if strings.Contains(item, "R") {
-		r := &Receipt{}
+		r := &finance.Receipt{}
 		res := db.Collection(rDb).FindOne(ctx, bson.M{
 			"_id": id,
 		})
@@ -209,7 +218,7 @@ func (hv *HistoryView) Edit(item string) {
 		ui.SetWidget(aView)
 		ui.SetFocusChain(aView)
 	} else {
-		t := &Transaction{}
+		t := &finance.Transaction{}
 		res := db.Collection(tDb).FindOne(ctx, bson.M{
 			"_id": id,
 		})
@@ -279,7 +288,11 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 			}
 		}
 	case "set":
-		budget := GetBudget(hv.time)
+		budget, err := finance.GetBudget(db.Collection(bDb), dTimeout, hv.time)
+		if err != nil {
+			ui.SetWidget(NewErrorView(err))
+			ui.SetFocusChain(nil)
+		}
 		sView := NewSetBView(&budget)
 		ui.SetWidget(sView)
 		ui.SetFocusChain(sView)

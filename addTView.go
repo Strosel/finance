@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/marcusolsson/tui-go"
+	"github.com/strosel/finance/finance"
 )
 
 type AddTView struct {
@@ -26,12 +27,12 @@ type AddTView struct {
 	lbls map[string]*tui.Label
 
 	Parent      *AddRView
-	Transaction *Transaction
+	Transaction *finance.Transaction
 }
 
-func NewAddTView(p *AddRView, t *Transaction) *AddTView {
+func NewAddTView(p *AddRView, t *finance.Transaction) *AddTView {
 	if t == nil {
-		t = &Transaction{}
+		t = &finance.Transaction{}
 	}
 	root := AddTView{
 		Parent:      p,
