@@ -57,13 +57,13 @@ func GetEvents() []Event {
 	trs := []Transaction{}
 	res := []Receipt{}
 	//? Timeout len
-	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-	curs, err := db.Collection("test").Find(ctx, &bson.D{})
+	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+	curs, err := db.Collection(tDb).Find(ctx, &bson.D{})
 	noerr.Panic(err)
 	defer curs.Close(ctx)
 	noerr.Panic(curs.All(ctx, &trs))
 
-	curs, err = db.Collection("testR").Find(ctx, &bson.D{})
+	curs, err = db.Collection(rDb).Find(ctx, &bson.D{})
 	noerr.Panic(err)
 	defer curs.Close(ctx)
 	noerr.Panic(curs.All(ctx, &res))

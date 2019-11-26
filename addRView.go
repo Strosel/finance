@@ -60,10 +60,10 @@ func NewAddRView(r *Receipt) *AddRView {
 
 	if r.ID.IsZero() {
 		root.Box.SetTitle("Add")
-		root.Datei.SetText(time.Now().Format("06-01-02 15:04"))
+		root.Datei.SetText(time.Now().Format(timef))
 	} else {
 		root.Box.SetTitle("Update")
-		root.Datei.SetText(root.Receipt.Datetime.Format("06-01-02 15:04"))
+		root.Datei.SetText(root.Receipt.Datetime.Format(timef))
 		root.Storei.SetText(root.Receipt.Store)
 	}
 
@@ -72,14 +72,14 @@ func NewAddRView(r *Receipt) *AddRView {
 }
 
 func (av *AddRView) Save(b *tui.Button) {
-	av.Receipt.Datetime, err = time.Parse("06-01-02 15:04", av.Datei.Text())
+	av.Receipt.Datetime, err = time.Parse(timef, av.Datei.Text())
 	noerr.Panic(err)
 	av.Receipt.Store = av.Storei.Text()
 	//! handle errors
 	if av.Receipt.ID.IsZero() {
 		av.Receipt.ID = primitive.NewObjectID()
-		ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-		_, err := db.Collection("testR").InsertOne(ctx, av.Receipt)
+		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+		_, err := db.Collection(rDb).InsertOne(ctx, av.Receipt)
 		noerr.Panic(err)
 	} else {
 		//update

@@ -20,8 +20,8 @@ type Budget struct {
 func GetBudget() Budget {
 	bgt := Budget{}
 	//? Timeout len
-	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-	res := db.Collection("testB").FindOne(ctx, &bson.D{})
+	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+	res := db.Collection(bDb).FindOne(ctx, &bson.D{})
 	noerr.Panic(res.Decode(&bgt))
 
 	//TODO SORT

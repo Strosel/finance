@@ -113,12 +113,12 @@ func NewSetBView(b *Budget) *SetBView {
 	root.Box = tui.NewVBox(gbox, tbox, bbox)
 
 	if b.ID.IsZero() {
-		root.Dateii.SetText(time.Now().Format("06-01-02 15:04"))
-		root.Starti.SetText(time.Now().Format("06-01-02 15:04"))
-		root.Endi.SetText(time.Now().AddDate(0, 1, -1).Format("06-01-02 15:04"))
+		root.Dateii.SetText(time.Now().Format(timef))
+		root.Starti.SetText(time.Now().Format(timef))
+		root.Endi.SetText(time.Now().AddDate(0, 1, -1).Format(timef))
 	} else {
-		root.Starti.SetText(root.Budget.Start.Format("06-01-02 15:04"))
-		root.Endi.SetText(root.Budget.End.Format("06-01-02 15:04"))
+		root.Starti.SetText(root.Budget.Start.Format(timef))
+		root.Endi.SetText(root.Budget.End.Format(timef))
 	}
 
 	root.Update()
@@ -128,7 +128,7 @@ func NewSetBView(b *Budget) *SetBView {
 func (sv *SetBView) Addi(b *tui.Button) {
 	sum, err := strconv.ParseFloat(sv.Sumii.Text(), 64)
 	noerr.Panic(err)
-	date, err := time.Parse("06-01-02 15:04", sv.Dateii.Text())
+	date, err := time.Parse(timef, sv.Dateii.Text())
 	noerr.Panic(err)
 	sv.Budget.Income[sv.Nameii.Text()] = Income{
 		Sum:  int(100 * sum),
@@ -138,7 +138,7 @@ func (sv *SetBView) Addi(b *tui.Button) {
 
 	sv.Nameii.SetText("")
 	sv.Sumii.SetText("")
-	sv.Dateii.SetText(time.Now().Format("06-01-02 15:04"))
+	sv.Dateii.SetText(time.Now().Format(timef))
 }
 
 func (sv *SetBView) Adds(b *tui.Button) {
@@ -156,7 +156,7 @@ func (sv *SetBView) Update() {
 	sv.Sets.Clear()
 
 	for n, i := range sv.Budget.Income {
-		sv.Seti.Append(fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format("06-01-02 15:04"), float64(i.Sum)/100.))
+		sv.Seti.Append(fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timef), float64(i.Sum)/100.))
 	}
 
 	for n, s := range sv.Budget.Spending {
@@ -168,8 +168,8 @@ func (sv *SetBView) Update() {
 func (sv *SetBView) Save(b *tui.Button) {
 	if sv.Budget.ID.IsZero() {
 		sv.Budget.ID = primitive.NewObjectID()
-		ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-		_, err := db.Collection("testB").InsertOne(ctx, sv.Budget)
+		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+		_, err := db.Collection(bDb).InsertOne(ctx, sv.Budget)
 		noerr.Panic(err)
 	} else {
 		//update

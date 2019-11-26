@@ -76,9 +76,9 @@ func NewAddTView(p *AddRView, t *Transaction) *AddTView {
 	if p == nil {
 		root.Box.Insert(0, boxd)
 		if t.ID.IsZero() {
-			root.Datei.SetText(time.Now().Format("06-01-02 15:04"))
+			root.Datei.SetText(time.Now().Format(timef))
 		} else {
-			root.Datei.SetText(root.Transaction.Datetime.Format("06-01-02 15:04"))
+			root.Datei.SetText(root.Transaction.Datetime.Format(timef))
 		}
 	}
 
@@ -108,12 +108,12 @@ func (av *AddTView) Save(b *tui.Button) {
 
 	//! handle errors
 	if av.Parent == nil {
-		av.Transaction.Datetime, err = time.Parse("06-01-02 15:04", av.Datei.Text())
+		av.Transaction.Datetime, err = time.Parse(timef, av.Datei.Text())
 		noerr.Panic(err)
 		if av.Transaction.ID.IsZero() {
 			av.Transaction.ID = primitive.NewObjectID()
-			ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-			_, err := db.Collection("test").InsertOne(ctx, av.Transaction)
+			ctx, _ := context.WithTimeout(context.Background(), dTimeout)
+			_, err := db.Collection(tDb).InsertOne(ctx, av.Transaction)
 			noerr.Panic(err)
 		} else {
 			//update

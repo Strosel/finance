@@ -7,8 +7,6 @@ import (
 	"github.com/marcusolsson/tui-go"
 )
 
-const savestr = "spar|spara|sparande|save|saving|savings"
-
 type HistoryView struct {
 	*tui.Box
 	Summary *ScrollBox
@@ -54,7 +52,7 @@ func (hv *HistoryView) updateHistory(events []Event, expand string) {
 		hv.History.Append(
 			fmt.Sprintf(
 				"[%v] %10v %8v %10v %v",
-				e.GetTime().Format("06-01-02 15:04"),
+				e.GetTime().Format(timef),
 				e.GetName(),
 				e.GetSumS(),
 				e.GetCategory(),
