@@ -153,15 +153,9 @@ func (hv *HistoryView) updateSummary(events []finance.Event, budget finance.Budg
 
 func (hv *HistoryView) Update(expand string) {
 	budget, err := finance.GetBudget(db.Collection(bDb), dTimeout, hv.time)
-	if err != nil {
-		ui.SetWidget(NewErrorView(err))
-		ui.SetFocusChain(nil)
-	}
+	ResolveError(err)
 	events, err := finance.GetEvents(db.Collection(bDb), dTimeout, budget.Start, budget.End)
-	if err != nil {
-		ui.SetWidget(NewErrorView(err))
-		ui.SetFocusChain(nil)
-	}
+	ResolveError(err)
 	hv.updateHistory(events, expand)
 	hv.updateSummary(events, budget)
 }
@@ -169,27 +163,18 @@ func (hv *HistoryView) Update(expand string) {
 func (hv *HistoryView) Delete(item string) {
 	ids := idre.FindAllStringSubmatch(item, -1)[0][1]
 	id, err := primitive.ObjectIDFromHex(ids)
-	if err != nil {
-		ui.SetWidget(NewErrorView(err))
-		ui.SetFocusChain(nil)
-	}
+	ResolveError(err)
 	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 	if strings.Contains(item, "R") {
 		_, err = db.Collection(rDb).DeleteOne(ctx, bson.M{
 			"_id": id,
 		})
-		if err != nil {
-			ui.SetWidget(NewErrorView(err))
-			ui.SetFocusChain(nil)
-		}
+		ResolveError(err)
 	} else {
 		_, err = db.Collection(tDb).DeleteOne(ctx, bson.M{
 			"_id": id,
 		})
-		if err != nil {
-			ui.SetWidget(NewErrorView(err))
-			ui.SetFocusChain(nil)
-		}
+		ResolveError(err)
 	}
 
 	hv.Update("")
@@ -198,10 +183,7 @@ func (hv *HistoryView) Delete(item string) {
 func (hv *HistoryView) Edit(item string) {
 	ids := idre.FindAllStringSubmatch(item, -1)[0][1]
 	id, err := primitive.ObjectIDFromHex(ids)
-	if err != nil {
-		ui.SetWidget(NewErrorView(err))
-		ui.SetFocusChain(nil)
-	}
+	ResolveError(err)
 	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 	if strings.Contains(item, "R") {
 		r := &finance.Receipt{}
@@ -209,10 +191,7 @@ func (hv *HistoryView) Edit(item string) {
 			"_id": id,
 		})
 		err = res.Decode(r)
-		if err != nil {
-			ui.SetWidget(NewErrorView(err))
-			ui.SetFocusChain(nil)
-		}
+		ResolveError(err)
 
 		aView := NewAddRView(r)
 		ui.SetWidget(aView)
@@ -223,10 +202,7 @@ func (hv *HistoryView) Edit(item string) {
 			"_id": id,
 		})
 		err = res.Decode(t)
-		if err != nil {
-			ui.SetWidget(NewErrorView(err))
-			ui.SetFocusChain(nil)
-		}
+		ResolveError(err)
 
 		aView := NewAddTView(nil, t)
 		ui.SetWidget(aView)
@@ -289,10 +265,7 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 		}
 	case "set":
 		budget, err := finance.GetBudget(db.Collection(bDb), dTimeout, hv.time)
-		if err != nil {
-			ui.SetWidget(NewErrorView(err))
-			ui.SetFocusChain(nil)
-		}
+		ResolveError(err)
 		sView := NewSetBView(&budget)
 		ui.SetWidget(sView)
 		ui.SetFocusChain(sView)

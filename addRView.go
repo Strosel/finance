@@ -93,20 +93,14 @@ func (av *AddRView) Save(b *tui.Button) {
 		av.Receipt.ID = primitive.NewObjectID()
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 		_, err := db.Collection(rDb).InsertOne(ctx, av.Receipt)
-		if err != nil {
-			ui.SetWidget(NewErrorView(err))
-			ui.SetFocusChain(nil)
-		}
+		ResolveError(err)
 	} else {
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 		_, err := db.Collection(rDb).ReplaceOne(ctx,
 			bson.M{
 				"_id": av.Receipt.ID,
 			}, av.Receipt)
-		if err != nil {
-			ui.SetWidget(NewErrorView(err))
-			ui.SetFocusChain(nil)
-		}
+		ResolveError(err)
 	}
 	av.Cancel(b)
 }

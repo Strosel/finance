@@ -1,6 +1,10 @@
 package main
 
-import "github.com/marcusolsson/tui-go"
+import (
+	"log"
+
+	"github.com/marcusolsson/tui-go"
+)
 
 type errorView struct {
 	*tui.Box
@@ -18,4 +22,13 @@ func NewErrorView(e error) *errorView {
 	})
 	button.SetFocused(true)
 	return &errorView{tui.NewVBox(title, body, button)}
+}
+
+func ResolveError(e error) {
+	if err != nil && ui != nil {
+		ui.SetWidget(NewErrorView(err))
+		ui.SetFocusChain(nil)
+	} else if err != nil {
+		log.Fatal(err)
+	}
 }

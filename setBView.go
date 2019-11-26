@@ -271,20 +271,14 @@ func (sv *SetBView) Save(b *tui.Button) {
 		sv.Budget.ID = primitive.NewObjectID()
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 		_, err := db.Collection(bDb).InsertOne(ctx, sv.Budget)
-		if err != nil {
-			ui.SetWidget(NewErrorView(err))
-			ui.SetFocusChain(nil)
-		}
+		ResolveError(err)
 	} else {
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 		_, err := db.Collection(bDb).ReplaceOne(ctx,
 			bson.M{
 				"_id": sv.Budget.ID,
 			}, sv.Budget)
-		if err != nil {
-			ui.SetWidget(NewErrorView(err))
-			ui.SetFocusChain(nil)
-		}
+		ResolveError(err)
 	}
 	sv.Cancel(b)
 }

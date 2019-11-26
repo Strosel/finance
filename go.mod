@@ -1,4 +1,4 @@
-module github.com/Strosel/finance
+module github.com/strosel/finance
 
 go 1.12
 

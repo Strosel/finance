@@ -130,20 +130,14 @@ func (av *AddTView) Save(b *tui.Button) {
 			av.Transaction.ID = primitive.NewObjectID()
 			ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 			_, err := db.Collection(tDb).InsertOne(ctx, av.Transaction)
-			if err != nil {
-				ui.SetWidget(NewErrorView(err))
-				ui.SetFocusChain(nil)
-			}
+			ResolveError(err)
 		} else {
 			ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 			_, err := db.Collection(tDb).ReplaceOne(ctx,
 				bson.M{
 					"_id": av.Transaction.ID,
 				}, av.Transaction)
-			if err != nil {
-				ui.SetWidget(NewErrorView(err))
-				ui.SetFocusChain(nil)
-			}
+			ResolveError(err)
 		}
 	} else {
 		if av.Transaction.ID.IsZero() {
