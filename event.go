@@ -64,7 +64,7 @@ func GetEvents(start, end time.Time) []Event {
 	}
 
 	sort.Slice(evs, func(i, j int) bool {
-		return evs[i].GetTime().Before(evs[j].GetTime())
+		return evs[i].GetTime().After(evs[j].GetTime())
 	})
 
 	return evs
