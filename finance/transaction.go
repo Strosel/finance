@@ -2,6 +2,7 @@ package finance
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -33,7 +34,7 @@ func (t Transaction) GetSumS() string {
 }
 
 func (t Transaction) GetCategory() string {
-	return t.Category
+	return strings.ToLower(t.Category)
 }
 
 func (t Transaction) GetType() string {
