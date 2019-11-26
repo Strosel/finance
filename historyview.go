@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/marcusolsson/tui-go"
 )
@@ -12,10 +13,14 @@ type HistoryView struct {
 	Summary *ScrollBox
 	History *ScrollList
 	Input   *tui.Entry
+
+	time time.Time
 }
 
 func GetHistoryView() *HistoryView {
-	root := HistoryView{}
+	root := HistoryView{
+		time: time.Now(),
+	}
 
 	root.Summary = NewScrollBox()
 	root.Summary.SetBorder(true)
@@ -24,7 +29,7 @@ func GetHistoryView() *HistoryView {
 	root.Summary.Box.Append(tui.NewLabel(fmt.Sprintf("%18v", "")))
 
 	root.History = NewScrollList()
-	root.Update("")
+	root.Update("", root.time)
 	root.History.SetBorder(true)
 	root.History.SetTitle("History")
 	root.History.SetSizePolicy(tui.Expanding, tui.Expanding)
@@ -139,10 +144,10 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%8.2f %8.2f", "Balance", float64(inc-bt)/100., float64(inc-st)/100.)))
 }
 
-func (hv *HistoryView) Update(expand string) {
+func (hv *HistoryView) Update(expand string, t time.Time) {
 	//events := RandEventStub(40)
-	events := GetEvents()
-	budget := GetBudget()
+	budget := GetBudget(t)
+	events := GetEvents(budget.Start, budget.End)
 	hv.updateHistory(events, expand)
 	hv.updateSummary(events, budget)
 }
@@ -181,11 +186,11 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 	cmd := strings.Split(e.Text(), " ")
 	switch strings.ToLower(cmd[0]) {
 	case "update":
-		hv.Update("")
+		hv.Update("", hv.time)
 		fallthrough
 	case "expand":
 		if len(cmd) > 1 {
-			hv.Update(cmd[1])
+			hv.Update(cmd[1], hv.time)
 		}
 		fallthrough
 	case "add":
@@ -205,6 +210,15 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 		ui.SetWidget(sView)
 		ui.SetFocusChain(sView)
 		//todo check for existing in given timeframe, use that
+	case "time":
+		if len(cmd) > 1 {
+			if t, err := time.Parse(timefs, cmd[1]); err == nil {
+				hv.Update("", t)
+				hv.time = t
+			} else if strings.ToLower(cmd[1]) == "now" {
+				hv.time = time.Now()
+			}
+		}
 	}
 
 	e.SetText("")

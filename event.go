@@ -53,17 +53,27 @@ func RandEventStub(n int) []Event {
 	return ev
 }
 
-func GetEvents() []Event {
+func GetEvents(start, end time.Time) []Event {
 	trs := []Transaction{}
 	res := []Receipt{}
 	//? Timeout len
 	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
-	curs, err := db.Collection(tDb).Find(ctx, &bson.D{})
+	curs, err := db.Collection(tDb).Find(ctx, &bson.D{bson.E{
+		Key: "datetime",
+		Value: bson.D{
+			bson.E{Key: "$gte", Value: start},
+			bson.E{Key: "$lte", Value: end},
+		}}})
 	noerr.Panic(err)
 	defer curs.Close(ctx)
 	noerr.Panic(curs.All(ctx, &trs))
 
-	curs, err = db.Collection(rDb).Find(ctx, &bson.D{})
+	curs, err = db.Collection(rDb).Find(ctx, &bson.D{bson.E{
+		Key: "datetime",
+		Value: bson.D{
+			bson.E{Key: "$gte", Value: start},
+			bson.E{Key: "$lte", Value: end},
+		}}})
 	noerr.Panic(err)
 	defer curs.Close(ctx)
 	noerr.Panic(curs.All(ctx, &res))

@@ -17,6 +17,7 @@ const (
 	bDb      = "testB"
 	dTimeout = time.Minute
 	timef    = "06-01-02 15:04"
+	timefs   = "06-01-02"
 )
 
 var (
