@@ -119,7 +119,6 @@ func (av *AddTView) Save(b *tui.Button) {
 	}
 	av.Transaction.Sum = sum
 
-	//! handle errors
 	if av.Parent == nil {
 		av.Transaction.Datetime, err = time.Parse(timef, av.Datei.Text())
 		if err != nil {

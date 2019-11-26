@@ -88,7 +88,6 @@ func (av *AddRView) Save(b *tui.Button) {
 		return
 	}
 	av.Receipt.Store = av.Storei.Text()
-	//! handle errors
 	if av.Receipt.ID.IsZero() {
 		av.Receipt.ID = primitive.NewObjectID()
 		ctx, _ := context.WithTimeout(context.Background(), dTimeout)

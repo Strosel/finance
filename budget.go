@@ -18,10 +18,9 @@ type Budget struct {
 
 func GetBudget(t time.Time) Budget {
 	bgt := Budget{}
-	//? Timeout len
 	ctx, _ := context.WithTimeout(context.Background(), dTimeout)
 	res := db.Collection(bDb).FindOne(ctx, bson.M{
-		//timme is modified to accomodate fo wierdness in mongodb
+		//time is modified to accomodate fo wierdness in mongodb
 		"start": bson.M{
 			"$lte": t.AddDate(0, 0, 1),
 		},
@@ -31,6 +30,5 @@ func GetBudget(t time.Time) Budget {
 	})
 	res.Decode(&bgt)
 
-	//TODO SORT
 	return bgt
 }

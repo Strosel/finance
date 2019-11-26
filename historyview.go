@@ -136,7 +136,7 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 		st += spent[k]
 	}
 
-	hv.Summary.Append(tui.NewLabel(" ")) //?
+	hv.Summary.Append(tui.NewLabel(" "))
 	hv.Summary.Append(tui.NewLabel("Total:"))
 	hv.Summary.Append(SummaryFormat(bt, st, st > bt))
 
@@ -146,12 +146,11 @@ func (hv *HistoryView) updateSummary(events []Event, budget Budget) {
 			inc += v.Sum
 		}
 	}
-	hv.Summary.Append(tui.NewLabel(" ")) //?
+	hv.Summary.Append(tui.NewLabel(" "))
 	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%8.2f %8.2f", "Balance", float64(inc-bt)/100., float64(inc-st)/100.)))
 }
 
 func (hv *HistoryView) Update(expand string) {
-	//events := RandEventStub(40)
 	budget := GetBudget(hv.time)
 	events := GetEvents(budget.Start, budget.End)
 	hv.updateHistory(events, expand)
@@ -284,7 +283,6 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 		sView := NewSetBView(&budget)
 		ui.SetWidget(sView)
 		ui.SetFocusChain(sView)
-		//todo check for existing in given timeframe, use that
 	case "time", "view":
 		if len(cmd) > 1 {
 			if t, err := time.Parse(timefs, cmd[1]); err == nil {
