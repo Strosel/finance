@@ -36,10 +36,13 @@ func main() {
 	db, err = Connect(ctx, "finance")
 	noerr.Fatal(err)
 
-	hView = GetHistoryView()
-
-	ui, err = tui.New(hView)
+	ui, err = tui.New(tui.NewHBox())
 	noerr.Fatal(err)
+
+	hView = GetHistoryView()
+	ui.SetWidget(hView)
+	ui.SetFocusChain(hView)
+	hView.Update("")
 
 	ui.SetKeybinding("Esc", func() { ui.Quit() })
 	ui.SetFocusChain(hView)
