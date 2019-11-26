@@ -210,7 +210,7 @@ func (hv *HistoryView) Command(e *tui.Entry) {
 		ui.SetWidget(sView)
 		ui.SetFocusChain(sView)
 		//todo check for existing in given timeframe, use that
-	case "time":
+	case "time", "view":
 		if len(cmd) > 1 {
 			if t, err := time.Parse(timefs, cmd[1]); err == nil {
 				hv.Update("", t)
