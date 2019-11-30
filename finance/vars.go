@@ -1,7 +1,22 @@
 package finance
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
-const Savestr = "spar|spara|sparande|save|saving|savings"
+var (
+	zre     = regexp.MustCompile(`/0+`)
+	savestr = regexp.MustCompile("(spar|spara|sparande|save|saving|savings)")
+)
 
-var zre = regexp.MustCompile(`/0+`)
+func IsSavings(obj interface{}) bool {
+	switch o := obj.(type) {
+	case Transaction:
+		return savestr.MatchString(strings.ToLower(o.Name))
+	case string:
+		return savestr.MatchString(strings.ToLower(o))
+	default:
+		return false
+	}
+}

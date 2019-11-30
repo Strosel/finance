@@ -125,7 +125,7 @@ func (hv *HistoryView) updateSummary(events []finance.Event, budget finance.Budg
 	for c, s := range budget.Spending {
 		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:", c)))
 
-		if strings.Contains(finance.Savestr, strings.ToLower(c)) {
+		if finance.IsSavings(c) {
 			hv.Summary.Append(SummaryFormat(s, spent[c], spent[c] < s))
 		} else {
 			hv.Summary.Append(SummaryFormat(s, spent[c], spent[c] > s))
