@@ -33,7 +33,26 @@ func SummaryFormat(plan, fact int, warn bool) *tui.Box {
 		)
 	}
 	return tui.NewHBox(
-		tui.NewLabel(fmt.Sprintf("%8v", "")),
+		tui.NewLabel(fmt.Sprintf("%9v", "")),
 		slbl,
+	)
+}
+
+func SavingsFormat(plan, fact int) *tui.Box {
+	think := tui.NewLabel(fmt.Sprintf("%9.2f", float64(plan)/100.))
+	if plan < 0 {
+		think.SetStyleName("warning")
+	}
+
+	real := tui.NewLabel(fmt.Sprintf("%9.2f", float64(fact)/100.))
+	if fact < plan {
+		real.SetStyleName("warning")
+	} else {
+		real.SetStyleName("good")
+	}
+
+	return tui.NewHBox(
+		think,
+		real,
 	)
 }

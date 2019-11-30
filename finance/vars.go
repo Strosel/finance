@@ -12,6 +12,8 @@ var (
 
 func IsSavings(obj interface{}) bool {
 	switch o := obj.(type) {
+	case *Transaction:
+		return savestr.MatchString(strings.ToLower(o.Name)) || savestr.MatchString(strings.ToLower(o.Category))
 	case Transaction:
 		return savestr.MatchString(strings.ToLower(o.Name)) || savestr.MatchString(strings.ToLower(o.Category))
 	case string:
