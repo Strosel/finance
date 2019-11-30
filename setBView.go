@@ -194,7 +194,7 @@ func (sv *SetBView) Adds(b *tui.Button) {
 
 func (sv *SetBView) Editi(item string) {
 	for n, i := range sv.Budget.Income {
-		lbl := fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timefs), float64(i.Sum)/100.)
+		lbl := fmt.Sprintf("%-10v %16v %9.2f", n, i.Date.Format(timefs), float64(i.Sum)/100.)
 
 		if item == lbl {
 			sv.Nameii.SetText(n)
@@ -208,7 +208,7 @@ func (sv *SetBView) Editi(item string) {
 
 func (sv *SetBView) Edits(item string) {
 	for n, s := range sv.Budget.Spending {
-		lbl := fmt.Sprintf("%-10v %8.2f", n, float64(s)/100.)
+		lbl := fmt.Sprintf("%-10v %9.2f", n, float64(s)/100.)
 
 		if item == lbl {
 			sv.Namesi.SetText(n)
@@ -221,7 +221,7 @@ func (sv *SetBView) Edits(item string) {
 
 func (sv *SetBView) Deli(item string) {
 	for n, i := range sv.Budget.Income {
-		lbl := fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timefs), float64(i.Sum)/100.)
+		lbl := fmt.Sprintf("%-10v %16v %9.2f", n, i.Date.Format(timefs), float64(i.Sum)/100.)
 
 		if item == lbl {
 			delete(sv.Budget.Income, n)
@@ -233,7 +233,7 @@ func (sv *SetBView) Deli(item string) {
 
 func (sv *SetBView) Dels(item string) {
 	for n, s := range sv.Budget.Spending {
-		lbl := fmt.Sprintf("%-10v %8.2f", n, float64(s)/100.)
+		lbl := fmt.Sprintf("%-10v %9.2f", n, float64(s)/100.)
 
 		if item == lbl {
 			delete(sv.Budget.Spending, n)
@@ -248,11 +248,11 @@ func (sv *SetBView) Update() {
 	sv.Sets.Clear()
 
 	for n, i := range sv.Budget.Income {
-		sv.Seti.Append(fmt.Sprintf("%-10v %16v %8.2f", n, i.Date.Format(timefs), float64(i.Sum)/100.))
+		sv.Seti.Append(fmt.Sprintf("%-10v %16v %9.2f", n, i.Date.Format(timefs), float64(i.Sum)/100.))
 	}
 
 	for n, s := range sv.Budget.Spending {
-		sv.Sets.Append(fmt.Sprintf("%-10v %8.2f", n, float64(s)/100.))
+		sv.Sets.Append(fmt.Sprintf("%-10v %9.2f", n, float64(s)/100.))
 	}
 
 }

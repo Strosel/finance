@@ -63,7 +63,7 @@ func (hv *HistoryView) updateHistory(events []finance.Event, expand string) {
 	for _, e := range events {
 		hv.History.Append(
 			fmt.Sprintf(
-				"[%v] %10v %8v %10v %v",
+				"[%v] %20v %8v %10v %v",
 				e.GetTime().Format(timef),
 				e.GetName(),
 				e.GetSumS(),
@@ -76,7 +76,7 @@ func (hv *HistoryView) updateHistory(events []finance.Event, expand string) {
 			for _, p := range r.Products {
 				hv.History.Append(
 					fmt.Sprintf(
-						"%16v %10v %8v %10v %v",
+						"%16v %20v %8v %10v %v",
 						"",
 						p.GetName(),
 						p.GetSumS(),
@@ -149,7 +149,7 @@ func (hv *HistoryView) updateSummary(events []finance.Event, budget finance.Budg
 		inc += v.Sum
 	}
 	hv.Summary.Append(tui.NewLabel(" "))
-	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%8.2f %8.2f", "Balance", float64(inc-bt)/100., float64(cinc-st)/100.)))
+	hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:\n%9.2f %9.2f", "Balance", float64(inc-bt)/100., float64(cinc-st)/100.)))
 }
 
 func (hv *HistoryView) Update(expand string) {

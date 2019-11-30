@@ -31,7 +31,7 @@ func (r Receipt) GetSum() int {
 }
 
 func (r Receipt) GetSumS() string {
-	return fmt.Sprintf("%8.2f", float64(r.GetSum())/100.)
+	return fmt.Sprintf("%9.2f", float64(r.GetSum())/100.)
 }
 
 func (r Receipt) GetCategory() string {
