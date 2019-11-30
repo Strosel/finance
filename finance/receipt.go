@@ -25,7 +25,7 @@ func (r Receipt) GetName() string {
 func (r Receipt) GetSum() int {
 	sum := 0
 	for _, t := range r.Products {
-		if IsSavings(t) {
+		if !IsSavings(t) {
 			sum += t.Sum
 		}
 	}
