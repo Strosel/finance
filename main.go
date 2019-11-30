@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	savestr  = "spar|spara|sparande|save|saving|savings"
 	rDb      = "receipts"     //"testR"
 	tDb      = "transactions" //"test"
 	bDb      = "budgets"      //"testB"

@@ -2,6 +2,7 @@ package finance
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -25,7 +26,9 @@ func (r Receipt) GetName() string {
 func (r Receipt) GetSum() int {
 	sum := 0
 	for _, t := range r.Products {
-		sum += t.Sum
+		if !strings.Contains(t.Name, Savestr) {
+			sum += t.Sum
+		}
 	}
 	return sum
 }
