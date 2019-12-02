@@ -31,7 +31,7 @@ func GetHistoryView() *HistoryView {
 	root.Summary.SetBorder(true)
 	root.Summary.SetTitle("Summary")
 	root.Summary.SetSizePolicy(tui.Maximum, tui.Maximum)
-	root.Summary.Box.Append(tui.NewLabel(fmt.Sprintf("%18v", "")))
+	root.Summary.Box.Append(tui.NewLabel(fmt.Sprintf("%19v", "")))
 
 	root.History = NewScrollList()
 	root.Update("")
