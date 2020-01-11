@@ -116,14 +116,14 @@ func (hv *HistoryView) updateSummary(events []finance.Event, budget finance.Budg
 
 	hv.Summary.Append(tui.NewLabel("Income"))
 	for c, s := range budget.Income {
-		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:", c)))
+		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:", strings.Title(c))))
 		hv.Summary.Append(SummaryFormat(-1, s.Sum, !s.Received()))
 	}
 
 	hv.Summary.Append(tui.NewLabel(" "))
 	hv.Summary.Append(tui.NewLabel("Spending"))
 	for c, s := range budget.Spending {
-		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:", c)))
+		hv.Summary.Append(tui.NewLabel(fmt.Sprintf("%v:", strings.Title(c))))
 
 		if finance.IsSavings(c) {
 			hv.Summary.Append(SavingsFormat(s, spent[c]))

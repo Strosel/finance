@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -164,7 +165,8 @@ func (sv *SetBView) Addi(b *tui.Button) {
 		sv.lblsi["date"].SetStyleName("warning")
 		return
 	}
-	sv.Budget.Income[sv.Nameii.Text()] = finance.Income{
+	name := strings.ToLower(sv.Nameii.Text())
+	sv.Budget.Income[name] = finance.Income{
 		Sum:  sum,
 		Date: date,
 	}
@@ -185,7 +187,8 @@ func (sv *SetBView) Adds(b *tui.Button) {
 		sv.lblss["sum"].SetStyleName("warning")
 		return
 	}
-	sv.Budget.Spending[sv.Namesi.Text()] = sum
+	name := strings.ToLower(sv.Namesi.Text())
+	sv.Budget.Spending[name] = sum
 	sv.Update()
 
 	sv.Namesi.SetText("")
