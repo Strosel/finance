@@ -265,12 +265,12 @@ func (sv *SetBView) Save(b *tui.Button) {
 		l.SetStyleName("normal")
 	}
 
-	sv.Budget.Start, err = time.Parse(timefs, sv.Starti.Text())
+	sv.Budget.Start, err = time.Parse(timef, sv.Starti.Text()+" 00:01")
 	if err != nil {
 		sv.lblsg["start"].SetStyleName("warning")
 		return
 	}
-	sv.Budget.End, err = time.Parse(timefs, sv.Endi.Text())
+	sv.Budget.End, err = time.Parse(timef, sv.Endi.Text()+" 23:59")
 	if err != nil {
 		sv.lblsg["end"].SetStyleName("warning")
 		return
